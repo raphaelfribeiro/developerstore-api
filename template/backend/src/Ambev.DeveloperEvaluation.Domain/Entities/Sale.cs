@@ -89,6 +89,23 @@ public class Sale : BaseEntity
     }
 
     /// <summary>
+    /// Replaces all items in the sale, re-applying business rules to each item.
+    /// Used by the update operation.
+    /// </summary>
+    public void ReplaceItems(IEnumerable<SaleItem> newItems)
+    {
+        _items.Clear();
+        foreach (var item in newItems)
+        {
+            ValidateItemQuantity(item.Quantity);
+            item.ApplyDiscount(CalculateDiscount(item.Quantity));
+            _items.Add(item);
+        }
+        RecalculateTotalAmount();
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
     /// Cancels the entire sale and all its items.
     /// </summary>
     public void Cancel()
@@ -140,20 +157,15 @@ public class Sale : BaseEntity
     }
 
     /// <summary>
-    /// Business rule: calculates the discount percentage based on quantity.
-    /// - Below 4 items: no discount (0%)
-    /// - 4 to 9 items: 10% discount
-    /// - 10 to 20 items: 20% discount
+    /// Business rule: calculates discount based on quantity.
+    /// Below 4: 0% | 4-9: 10% | 10-20: 20%
     /// </summary>
-    public static decimal CalculateDiscount(int quantity)
+    public static decimal CalculateDiscount(int quantity) => quantity switch
     {
-        return quantity switch
-        {
-            >= 10 and <= 20 => 0.20m,
-            >= 4 => 0.10m,
-            _ => 0m
-        };
-    }
+        >= 10 and <= 20 => 0.20m,
+        >= 4 => 0.10m,
+        _ => 0m
+    };
 
     /// <summary>
     /// Business rule: validates that quantity does not exceed the maximum of 20 per product.
