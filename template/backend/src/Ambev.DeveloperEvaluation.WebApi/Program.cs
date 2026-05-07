@@ -40,7 +40,8 @@ public class Program
 
             builder.RegisterDependencies();
 
-            builder.Services.AddAutoMapper(typeof(Program).Assembly, typeof(ApplicationLayer).Assembly);
+            // AutoMapper configuration can be added here if needed, but for now, we are just scanning the assemblies for profiles.
+            builder.Services.AddAutoMapper(config => { }, typeof(Program).Assembly, typeof(ApplicationLayer).Assembly);
 
             builder.Services.AddMediatR(cfg =>
             {
