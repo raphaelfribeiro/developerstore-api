@@ -1,6 +1,8 @@
+using Ambev.DeveloperEvaluation.Domain.Events;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
 using Ambev.DeveloperEvaluation.ORM;
 using Ambev.DeveloperEvaluation.ORM.Repositories;
+using Ambev.DeveloperEvaluation.ORM.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,5 +26,8 @@ public class InfrastructureModuleInitializer : IModuleInitializer
 
         // Product
         builder.Services.AddScoped<IProductRepository, ProductRepository>();
+
+        // Event publisher with Polly retry (logs events via Serilog)
+        builder.Services.AddSingleton<IEventPublisher, LoggingEventPublisher>();
     }
 }
