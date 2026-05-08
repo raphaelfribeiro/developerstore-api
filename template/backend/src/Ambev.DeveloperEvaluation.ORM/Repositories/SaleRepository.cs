@@ -51,9 +51,37 @@ public class SaleRepository : ISaleRepository
     /// <inheritdoc/>
     public async Task<Sale> UpdateAsync(Sale sale, CancellationToken cancellationToken = default)
     {
-        _context.Sales.Update(sale);
+        var existing = await _context.Sales
+            .Include(s => s.Items)
+            .FirstOrDefaultAsync(s => s.Id == sale.Id, cancellationToken);
+
+        if (existing is null)
+            throw new InvalidOperationException($"Sale {sale.Id} not found for update.");
+
+        // Remove old items
+        _context.SaleItems.RemoveRange(existing.Items);
+
+        // Update scalar properties
+        existing.SaleNumber = sale.SaleNumber;
+        existing.SaleDate = sale.SaleDate;
+        existing.CustomerId = sale.CustomerId;
+        existing.CustomerName = sale.CustomerName;
+        existing.BranchId = sale.BranchId;
+        existing.BranchName = sale.BranchName;
+        existing.UpdatedAt = sale.UpdatedAt;
+
+        // Add new items
+        foreach (var item in sale.Items)
+        {
+            item.SaleId = existing.Id;
+            _context.SaleItems.Add(item);
+        }
+
+        // Recalculate total
+        existing.RecalculateTotalAmount();
+
         await _context.SaveChangesAsync(cancellationToken);
-        return sale;
+        return existing;
     }
 
     /// <inheritdoc/>
@@ -66,5 +94,12 @@ public class SaleRepository : ISaleRepository
         _context.Sales.Remove(sale);
         await _context.SaveChangesAsync(cancellationToken);
         return true;
+    }
+
+    /// <inheritdoc/>
+    public async Task<Sale> SaveAsync(Sale sale, CancellationToken cancellationToken = default)
+    {
+        await _context.SaveChangesAsync(cancellationToken);
+        return sale;
     }
 }

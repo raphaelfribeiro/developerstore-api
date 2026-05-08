@@ -56,7 +56,7 @@ public class CancelSaleItemHandler : IRequestHandler<CancelSaleItemCommand, Canc
             ?? throw new KeyNotFoundException($"Item with ID {command.ItemId} not found in sale {command.SaleId}.");
 
         sale.CancelItem(command.ItemId); // business rule: updates total
-        await _saleRepository.UpdateAsync(sale, cancellationToken);
+        await _saleRepository.SaveAsync(sale, cancellationToken);
 
         await _eventPublisher.PublishAsync(
             new ItemCancelledEvent(sale.Id, item.Id, item.ProductId),
