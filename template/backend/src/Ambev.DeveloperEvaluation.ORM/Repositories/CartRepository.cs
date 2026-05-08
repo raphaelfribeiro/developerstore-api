@@ -43,7 +43,6 @@ public class CartRepository : ICartRepository
     /// <inheritdoc/>
     public async Task<Cart> UpdateAsync(Cart cart, CancellationToken cancellationToken = default)
     {
-        // Reload the existing cart to manage child items correctly
         var existing = await _context.Carts
             .Include(c => c.Items)
             .FirstOrDefaultAsync(c => c.Id == cart.Id, cancellationToken);
@@ -51,19 +50,28 @@ public class CartRepository : ICartRepository
         if (existing is null)
             throw new InvalidOperationException($"Cart {cart.Id} not found for update.");
 
-        // Remove old items and let cascade take care of them
-        _context.CartItems.RemoveRange(existing.Items);
+        // Remove old items explicitly
+        foreach (var item in existing.Items.ToList())
+            _context.Entry(item).State = EntityState.Deleted;
+
+        await _context.SaveChangesAsync(cancellationToken);
 
         // Update scalar properties
         existing.UserId = cart.UserId;
         existing.Date = cart.Date;
         existing.UpdatedAt = cart.UpdatedAt;
 
-        // Add new items
+        // Add new items with guaranteed new IDs
         foreach (var item in cart.Items)
         {
-            item.CartId = existing.Id;
-            _context.CartItems.Add(item);
+            var newItem = new CartItem
+            {
+                Id = Guid.NewGuid(),
+                CartId = existing.Id,
+                ProductId = item.ProductId
+            };
+            newItem.UpdateQuantity(item.Quantity);
+            _context.CartItems.Add(newItem);
         }
 
         await _context.SaveChangesAsync(cancellationToken);
