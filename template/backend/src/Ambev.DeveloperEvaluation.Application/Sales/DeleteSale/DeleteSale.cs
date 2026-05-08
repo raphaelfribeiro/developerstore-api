@@ -50,7 +50,7 @@ public class DeleteSaleHandler : IRequestHandler<DeleteSaleCommand, DeleteSaleRe
 
         // Business: cancel the sale before removing (triggers SaleCancelledEvent)
         sale.Cancel();
-        await _saleRepository.UpdateAsync(sale, cancellationToken);
+        await _saleRepository.SaveAsync(sale, cancellationToken);
         await _saleRepository.DeleteAsync(command.Id, cancellationToken);
 
         await _eventPublisher.PublishAsync(
