@@ -99,11 +99,13 @@ public class UpdateCartHandler : IRequestHandler<UpdateCartCommand, UpdateCartRe
         if (!validation.IsValid)
             throw new ValidationException(validation.Errors);
 
-        var cart = await _cartRepository.GetByIdAsync(command.Id, cancellationToken)
-            ?? throw new KeyNotFoundException($"Cart with ID {command.Id} not found.");
-
-        cart.UserId = command.UserId;
-        cart.Date = command.Date;
+        var cart = new Cart
+        {
+            Id = command.Id,
+            UserId = command.UserId,
+            Date = command.Date,
+            UpdatedAt = DateTime.UtcNow
+        };
 
         var newItems = command.Items
             .Select(i => CartItem.Create(i.ProductId, i.Quantity))
@@ -112,6 +114,7 @@ public class UpdateCartHandler : IRequestHandler<UpdateCartCommand, UpdateCartRe
         cart.UpdateItems(newItems);
 
         var updated = await _cartRepository.UpdateAsync(cart, cancellationToken);
+
         return _mapper.Map<UpdateCartResult>(updated);
     }
 }
