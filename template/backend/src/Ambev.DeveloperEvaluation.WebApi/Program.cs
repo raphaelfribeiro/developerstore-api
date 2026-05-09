@@ -1,7 +1,6 @@
 using Ambev.DeveloperEvaluation.Application;
 using Ambev.DeveloperEvaluation.Common.HealthChecks;
 using Ambev.DeveloperEvaluation.Common.Logging;
-using Ambev.DeveloperEvaluation.Common.Security;
 using Ambev.DeveloperEvaluation.Common.Validation;
 using Ambev.DeveloperEvaluation.IoC;
 using Ambev.DeveloperEvaluation.ORM;
@@ -24,6 +23,12 @@ public class Program
 
             WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
             builder.AddDefaultLogging();
+
+            // Configure Kestrel to listen on port 8080
+            builder.WebHost.ConfigureKestrel(options =>
+            {
+                options.ListenAnyIP(8080);
+            });
 
             builder.Services.AddControllers()
                 .ConfigureApiBehaviorOptions(options =>
@@ -79,8 +84,6 @@ public class Program
                 )
             );
 
-            builder.Services.AddJwtAuthentication(builder.Configuration);
-
             builder.RegisterDependencies();
 
             // AutoMapper configuration can be added here if needed, but for now, we are just scanning the assemblies for profiles.
@@ -96,7 +99,11 @@ public class Program
 
             builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 
+            Log.Information("Application started. Building app...");
+
             var app = builder.Build();
+
+            Log.Information("App built. Starting database migration process...");
             app.UseMiddleware<ValidationExceptionMiddleware>();
 
             // Swagger always enabled (useful for evaluators)
@@ -111,15 +118,36 @@ public class Program
             app.UseAuthorization();
             app.UseBasicHealthChecks();
             app.MapControllers();
-            
+
             // Apply pending migrations at startup
-            using (var scope = app.Services.CreateScope())
+            try
             {
-                var db = scope.ServiceProvider.GetRequiredService<DefaultContext>();
-                db.Database.Migrate();
+                Log.Information("Starting database migration process..."); 
+                
+                using (var scope = app.Services.CreateScope())
+                {
+                    var db = scope.ServiceProvider.GetRequiredService<DefaultContext>();
+                    Log.Information("Applying database migrations...");
+                    db.Database.Migrate();
+                    Log.Information("Database migrations applied successfully.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Failed to apply database migrations");
+                throw; // Re-throw to prevent app from starting
             }
 
-            app.Run();
+            Log.Information("Starting web server...");
+            try
+            {
+                app.Run();
+            }
+            catch (Exception ex)
+            {
+                Log.Fatal(ex, "Web server terminated unexpectedly");
+                throw;
+            }
         }
         catch (Exception ex)
         {
