@@ -43,13 +43,22 @@ bld/
 Generated\ Files/
 
 # Visual Studio Code
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-!.vscode/*.code-snippets
-!*.code-workspace
+.vscode/
+
+# Test Coverage
+**/coverage-report/
+**/coverage-results/
+
+# JetBrains Rider
+.idea/
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Environment Files
+.env
+.env.*
 
 # MSTest test Results
 [Tt]est[Rr]esult*/
