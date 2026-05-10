@@ -4,14 +4,14 @@ using Ambev.DeveloperEvaluation.Domain.Entities;
 namespace Ambev.DeveloperEvaluation.Application.Auth.AuthenticateUser;
 
 /// <summary>
-/// AutoMapper profile for authentication-related mappings
+/// AutoMapper profile for authentication-related mappings in Application layer
 /// </summary>
-public sealed class AuthenticateUserProfile : Profile
+public sealed class AuthenticateUserApplicationProfile : Profile
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="AuthenticateUserProfile"/> class
+    /// Initializes a new instance of the <see cref="AuthenticateUserApplicationProfile"/> class
     /// </summary>
-    public AuthenticateUserProfile()
+    public AuthenticateUserApplicationProfile()
     {
         CreateMap<User, AuthenticateUserResult>()
             .ForMember(dest => dest.Token, opt => opt.Ignore())

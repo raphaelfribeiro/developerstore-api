@@ -5,11 +5,11 @@ using Ambev.DeveloperEvaluation.Domain.Entities;
 namespace Ambev.DeveloperEvaluation.WebApi.Features.Auth.AuthenticateUserFeature;
 
 /// <summary>
-/// AutoMapper profile for authentication-related mappings
+/// AutoMapper profile for authentication-related mappings in WebApi layer
 /// </summary>
-public sealed class AuthenticateUserProfile : Profile
+public sealed class AuthenticateUserWebApiProfile : Profile
 {
-    public AuthenticateUserProfile()
+    public AuthenticateUserWebApiProfile()
     {
         CreateMap<AuthenticateUserRequest, AuthenticateUserCommand>();
 
