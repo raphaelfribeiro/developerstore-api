@@ -101,4 +101,29 @@ public class SaleMappingProfileTests
         result.Should().NotBeNull();
         result.SaleNumber.Should().Be(sale.SaleNumber);
     }
+
+    [Fact(DisplayName = "Given cancelled sale When mapping to GetSaleResult Then IsCancelled is true")]
+    public void Given_CancelledSale_When_MappingToGetSaleResult_Then_IsCancelledIsTrue()
+    {
+        var sale = SaleTestData.GenerateValidSale(quantity: 3);
+        sale.Cancel();
+
+        var result = _mapper.Map<GetSaleResult>(sale);
+
+        result.IsCancelled.Should().BeTrue();
+    }
+
+    [Fact(DisplayName = "Given sale item with discount When mapping to GetSaleItemResult Then financial fields map correctly")]
+    public void Given_SaleItemFromSale_When_MappingToGetSaleItemResult_Then_AllFinancialFieldsMap()
+    {
+        var sale = SaleTestData.GenerateValidSale(quantity: 5, unitPrice: 100m);
+        var item = sale.Items.First();
+
+        var result = _mapper.Map<GetSaleItemResult>(item);
+
+        result.Discount.Should().Be(0.10m);
+        result.TotalAmount.Should().Be(450m);
+        result.UnitPrice.Should().Be(100m);
+        result.Quantity.Should().Be(5);
+    }
 }

@@ -56,6 +56,31 @@ public class CreateCartHandlerTests
         var act = () => _handler.Handle(command, CancellationToken.None);
         await act.Should().ThrowAsync<FluentValidation.ValidationException>();
     }
+
+    [Fact(DisplayName = "Given valid command When creating cart Then creates cart with correct UserId")]
+    public async Task Handle_ValidCommand_CreatesCartWithCorrectUserId()
+    {
+        var userId = Guid.NewGuid();
+        var command = new CreateCartCommand
+        {
+            UserId = userId,
+            Date = DateTime.UtcNow,
+            Items = new List<CreateCartItemCommand>
+            {
+                new() { ProductId = Guid.NewGuid(), Quantity = 2 }
+            }
+        };
+        _cartRepository.CreateAsync(Arg.Any<Cart>(), Arg.Any<CancellationToken>())
+            .Returns(ci => ci.Arg<Cart>());
+        _mapper.Map<CreateCartResult>(Arg.Any<Cart>())
+            .Returns(ci => new CreateCartResult { UserId = ci.Arg<Cart>().UserId });
+
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        await _cartRepository.Received(1).CreateAsync(
+            Arg.Is<Cart>(c => c.UserId == userId), Arg.Any<CancellationToken>());
+        result.UserId.Should().Be(userId);
+    }
 }
 
 public class GetCartHandlerTests
@@ -140,6 +165,34 @@ public class UpdateCartHandlerTests
         var act = () => _handler.Handle(command, CancellationToken.None);
         await act.Should().ThrowAsync<FluentValidation.ValidationException>();
     }
+
+    [Fact(DisplayName = "Given valid update command When updating cart Then maps result from updated cart")]
+    public async Task Handle_ValidCommand_MapsResultFromUpdatedCart()
+    {
+        var cartId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var command = new UpdateCartCommand
+        {
+            Id = cartId,
+            UserId = userId,
+            Date = DateTime.UtcNow,
+            Items = new List<UpdateCartItemCommand>
+            {
+                new() { ProductId = Guid.NewGuid(), Quantity = 3 }
+            }
+        };
+
+        _cartRepository.UpdateAsync(Arg.Any<Cart>(), Arg.Any<CancellationToken>())
+            .Returns(ci => ci.Arg<Cart>());
+        _mapper.Map<UpdateCartResult>(Arg.Any<Cart>())
+            .Returns(ci => new UpdateCartResult { Id = ci.Arg<Cart>().Id, UserId = ci.Arg<Cart>().UserId });
+
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        result.Id.Should().Be(cartId);
+        result.UserId.Should().Be(userId);
+        _mapper.Received(1).Map<UpdateCartResult>(Arg.Is<Cart>(c => c.Id == cartId));
+    }
 }
 
 public class DeleteCartHandlerTests
@@ -220,6 +273,58 @@ public class GetCartsHandlerTests
 
         var result = await _handler.Handle(
             new GetCartsQuery { Page = 1, Size = 10, UserId = userId }, CancellationToken.None);
+
+        result.TotalCount.Should().Be(1);
+    }
+
+    [Fact(DisplayName = "Given empty repository When getting carts Then returns zero count")]
+    public async Task Handle_EmptyRepository_ReturnsZeroCount()
+    {
+        var carts = new List<Cart>().BuildMock();
+        _cartRepository.GetAllQueryable().Returns(carts);
+        _mapper.Map<List<GetCartsResult>>(Arg.Any<object>()).Returns(new List<GetCartsResult>());
+
+        var result = await _handler.Handle(
+            new GetCartsQuery { Page = 1, Size = 10 }, CancellationToken.None);
+
+        result.TotalCount.Should().Be(0);
+        result.Data.Should().BeEmpty();
+    }
+
+    [Fact(DisplayName = "Given 15 carts When getting page 2 Then returns correct pagination")]
+    public async Task Handle_QueryWithPage2_ReturnsCorrectPagination()
+    {
+        var cartsList = Enumerable.Range(1, 15)
+            .Select(_ => CartTestData.GenerateValidCart())
+            .ToList();
+        var carts = cartsList.BuildMock();
+        _cartRepository.GetAllQueryable().Returns(carts);
+        _mapper.Map<List<GetCartsResult>>(Arg.Any<object>()).Returns(new List<GetCartsResult>());
+
+        var result = await _handler.Handle(
+            new GetCartsQuery { Page = 2, Size = 10 }, CancellationToken.None);
+
+        result.TotalCount.Should().Be(15);
+        result.TotalPages.Should().Be(2);
+        result.CurrentPage.Should().Be(2);
+    }
+
+    [Fact(DisplayName = "Given query with MinDate filter When getting carts Then filters correctly")]
+    public async Task Handle_QueryWithDateFilter_FiltersCorrectly()
+    {
+        var oldCart = CartTestData.GenerateValidCart();
+        oldCart.Date = DateTime.UtcNow.AddDays(-30);
+        var recentCart = CartTestData.GenerateValidCart();
+        recentCart.Date = DateTime.UtcNow;
+
+        var carts = new List<Cart> { oldCart, recentCart }.BuildMock();
+        _cartRepository.GetAllQueryable().Returns(carts);
+        _mapper.Map<List<GetCartsResult>>(Arg.Any<object>())
+            .Returns(new List<GetCartsResult> { new() });
+
+        var result = await _handler.Handle(
+            new GetCartsQuery { Page = 1, Size = 10, MinDate = DateTime.UtcNow.AddDays(-1) },
+            CancellationToken.None);
 
         result.TotalCount.Should().Be(1);
     }

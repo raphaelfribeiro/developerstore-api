@@ -287,7 +287,7 @@ dotnet test Ambev.DeveloperEvaluation.sln --filter "FullyQualifiedName~Unit"
 <div align="center">
 
 ![Coverage](https://img.shields.io/badge/Line_Coverage-92%25-brightgreen?style=for-the-badge)
-![Tests](https://img.shields.io/badge/Tests-172_passing-brightgreen?style=for-the-badge)
+![Tests](https://img.shields.io/badge/Tests-193_passing-brightgreen?style=for-the-badge)
 ![Failures](https://img.shields.io/badge/Failures-0-brightgreen?style=for-the-badge)
 
 </div>
