@@ -441,6 +441,9 @@ O que seria evoluído com mais tempo:
 | **Kestrel explícito na porta 8080** | Garante binding correto independente de variáveis de ambiente |
 | **`[Authorize]` nos controllers** | Products, Carts e Sales exigem JWT Bearer em todos os endpoints; Users expõe somente `POST /api/users` como público (registro) |
 | **`ICollectionFixture` nos testes de integração** | Um único container PostgreSQL compartilhado entre todas as suites — elimina o anti-pattern `BuildServiceProvider()` e reduz o tempo de setup de minutos para ~15s |
+| **JWT Issuer + Audience validados** | `ValidateIssuer` e `ValidateAudience` habilitados; token gerado inclui `iss` e `aud` — tokens de outros sistemas ou chaves diferentes são rejeitados |
+| **JWT expiry lido do config** | `JwtTokenGenerator` lê `Jwt:ExpiryMinutes` (padrão 60 min) — sem valor hardcoded; alterável por variável de ambiente sem rebuild |
+| **JWT secret com mínimo 32 bytes** | `AddJwtAuthentication` valida comprimento mínimo da chave (requisito HS256 / RFC 7518) na inicialização da aplicação |
 
 ---
 
