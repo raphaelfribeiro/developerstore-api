@@ -1,9 +1,9 @@
 using Ambev.DeveloperEvaluation.Domain.Enums;
 using Ambev.DeveloperEvaluation.WebApi.Features.Users.Shared;
 
-namespace Ambev.DeveloperEvaluation.WebApi.Features.Users.CreateUser;
+namespace Ambev.DeveloperEvaluation.WebApi.Features.Users.UpdateUser;
 
-public class CreateUserRequest
+public class UpdateUserRequest
 {
     public string Email { get; set; } = string.Empty;
     public string Username { get; set; } = string.Empty;

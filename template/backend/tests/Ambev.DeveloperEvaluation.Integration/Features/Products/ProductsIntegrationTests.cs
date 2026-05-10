@@ -20,7 +20,7 @@ public class ProductsIntegrationTests : BaseIntegrationTest
     {
         var unauthClient = CreateUnauthenticatedClient();
 
-        var response = await unauthClient.GetAsync("/api/products?page=1&size=10");
+        var response = await unauthClient.GetAsync("/api/products?_page=1&_size=10");
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -52,12 +52,12 @@ public class ProductsIntegrationTests : BaseIntegrationTest
     {
         await AuthenticateClientAsync($"products.get{Guid.NewGuid():N}@test.com", "ValidPassword@123", $"prodget{Guid.NewGuid():N}");
 
-        var response = await Client.GetAsync("/api/products?page=1&size=10");
+        var response = await Client.GetAsync("/api/products?_page=1&_size=10");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var content = await response.Content.ReadAsStringAsync();
         content.Should().Contain("currentPage");
-        content.Should().Contain("totalCount");
+        content.Should().Contain("totalItems");
     }
 
     [Fact(DisplayName = "GET /api/products/categories When authenticated Then returns categories")]

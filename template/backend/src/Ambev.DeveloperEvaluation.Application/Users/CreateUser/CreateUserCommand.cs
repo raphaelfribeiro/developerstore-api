@@ -41,6 +41,46 @@ public class CreateUserCommand : IRequest<CreateUserResult>
     public string Email { get; set; } = string.Empty;
 
     /// <summary>
+    /// Gets or sets the user's first name.
+    /// </summary>
+    public string FirstName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the user's last name.
+    /// </summary>
+    public string LastName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the city of the user's address.
+    /// </summary>
+    public string City { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the street of the user's address.
+    /// </summary>
+    public string Street { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the street number of the user's address.
+    /// </summary>
+    public int Number { get; set; }
+
+    /// <summary>
+    /// Gets or sets the zip code of the user's address.
+    /// </summary>
+    public string ZipCode { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the geolocation latitude.
+    /// </summary>
+    public string GeoLat { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the geolocation longitude.
+    /// </summary>
+    public string GeoLong { get; set; } = string.Empty;
+
+    /// <summary>
     /// Gets or sets the status of the user.
     /// </summary>
     public UserStatus Status { get; set; }

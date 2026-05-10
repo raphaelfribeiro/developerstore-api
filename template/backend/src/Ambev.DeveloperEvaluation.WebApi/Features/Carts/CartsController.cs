@@ -79,12 +79,12 @@ public class CartsController : BaseController
     [HttpGet]
     [ProducesResponseType(typeof(PaginatedResponse<GetCartsResponse>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetCarts(
-        [FromQuery] int page = 1,
-        [FromQuery] int size = 10,
-        [FromQuery] string? order = null,
+        [FromQuery(Name = "_page")] int page = 1,
+        [FromQuery(Name = "_size")] int size = 10,
+        [FromQuery(Name = "_order")] string? order = null,
         [FromQuery] Guid? userId = null,
-        [FromQuery] DateTime? minDate = null,
-        [FromQuery] DateTime? maxDate = null,
+        [FromQuery(Name = "_minDate")] DateTime? minDate = null,
+        [FromQuery(Name = "_maxDate")] DateTime? maxDate = null,
         CancellationToken cancellationToken = default)
     {
         var query = new GetCartsQuery

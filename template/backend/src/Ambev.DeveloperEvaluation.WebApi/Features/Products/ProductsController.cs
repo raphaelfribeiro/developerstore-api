@@ -92,9 +92,9 @@ public class ProductsController : BaseController
     [ProducesResponseType(typeof(PaginatedResponse<GetProductsResponse>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetProductsByCategory(
         [FromRoute] string category,
-        [FromQuery] int page = 1,
-        [FromQuery] int size = 10,
-        [FromQuery] string? order = null,
+        [FromQuery(Name = "_page")] int page = 1,
+        [FromQuery(Name = "_size")] int size = 10,
+        [FromQuery(Name = "_order")] string? order = null,
         CancellationToken cancellationToken = default)
     {
         var query = new GetProductsByCategoryQuery { Category = category, Page = page, Size = size, Order = order };
@@ -112,13 +112,13 @@ public class ProductsController : BaseController
     [HttpGet]
     [ProducesResponseType(typeof(PaginatedResponse<GetProductsResponse>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetProducts(
-        [FromQuery] int page = 1,
-        [FromQuery] int size = 10,
-        [FromQuery] string? order = null,
+        [FromQuery(Name = "_page")] int page = 1,
+        [FromQuery(Name = "_size")] int size = 10,
+        [FromQuery(Name = "_order")] string? order = null,
         [FromQuery] string? title = null,
         [FromQuery] string? category = null,
-        [FromQuery] decimal? minPrice = null,
-        [FromQuery] decimal? maxPrice = null,
+        [FromQuery(Name = "_minPrice")] decimal? minPrice = null,
+        [FromQuery(Name = "_maxPrice")] decimal? maxPrice = null,
         CancellationToken cancellationToken = default)
     {
         var query = new GetProductsQuery

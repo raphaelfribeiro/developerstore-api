@@ -9,10 +9,10 @@ namespace Ambev.DeveloperEvaluation.Application.Auth.AuthenticateUser;
 public class AuthenticateUserCommand : IRequest<AuthenticateUserResult>
 {
     /// <summary>
-    /// Gets or sets the email address for authentication.
+    /// Gets or sets the username for authentication.
     /// Used as the primary identifier for the user.
     /// </summary>
-    public string Email { get; set; } = string.Empty;
+    public string Username { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the password for authentication.

@@ -37,7 +37,7 @@ public class GetUserHandlerTests
         _mapper.Map<GetUserResult>(user).Returns(new GetUserResult
         {
             Id = user.Id,
-            Name = user.Username,
+            Username = user.Username,
             Email = user.Email
         });
 

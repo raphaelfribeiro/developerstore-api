@@ -44,14 +44,13 @@ public abstract class BaseFunctionalTest
 
         await Client.PostAsJsonAsync("/api/users", registerRequest);
 
-        var loginRequest = new { email, password };
-        var response = await Client.PostAsJsonAsync("/api/auth", loginRequest);
+        var loginRequest = new { username, password };
+        var response = await Client.PostAsJsonAsync("/api/auth/login", loginRequest);
         response.EnsureSuccessStatusCode();
 
         var content = await response.Content.ReadAsStringAsync();
         var json = JsonDocument.Parse(content);
         var token = json.RootElement
-            .GetProperty("data")
             .GetProperty("token")
             .GetString();
 
