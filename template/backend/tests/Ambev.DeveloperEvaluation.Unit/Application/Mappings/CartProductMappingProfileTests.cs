@@ -98,6 +98,18 @@ public class CartMappingProfileTests
         result.ProductId.Should().Be(item.ProductId);
         result.Quantity.Should().Be(item.Quantity);
     }
+
+    [Fact(DisplayName = "Given Cart with multiple items When mapping to CreateCartResult Then all items mapped")]
+    public void Given_CartWithMultipleItems_When_MappingToCreateCartResult_Then_AllItemsMapped()
+    {
+        var cart = CartTestData.GenerateValidCart();
+        cart.AddItem(CartTestData.GenerateValidCartItem(quantity: 5));
+
+        var result = _mapper.Map<CreateCartResult>(cart);
+
+        result.Should().NotBeNull();
+        result.Items.Should().HaveCount(2);
+    }
 }
 
 public class ProductMappingProfileTests
