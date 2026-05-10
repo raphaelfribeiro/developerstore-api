@@ -76,12 +76,12 @@ O **DeveloperStore API** é uma API RESTful completa para gestão de um sistema 
 ### Testes
 | Tecnologia | Versão | Uso |
 |---|---|---|
-| ![xUnit](https://img.shields.io/badge/xUnit-2.9-512BD4?style=flat&logo=dotnet) | 2.9 | Framework de testes |
-| ![Bogus](https://img.shields.io/badge/Bogus-35.6-512BD4?style=flat&logo=dotnet) | 35.6 | Geração de dados falsos |
-| ![NSubstitute](https://img.shields.io/badge/NSubstitute-5.1-512BD4?style=flat&logo=dotnet) | 5.1 | Mocking |
-| ![FluentAssertions](https://img.shields.io/badge/FluentAssertions-6.12-00B4AB?style=flat&logo=dotnet) | 6.12 | Asserções expressivas |
-| ![MockQueryable](https://img.shields.io/badge/MockQueryable-7.0-512BD4?style=flat&logo=dotnet) | 7.0 | Mock de IQueryable async |
-| ![Testcontainers](https://img.shields.io/badge/Testcontainers-3.10-2496ED?style=flat&logo=docker) | 3.10 | PostgreSQL real nos testes |
+| ![xUnit](https://img.shields.io/badge/xUnit-2.9-512BD4?style=flat&logo=dotnet) | 2.9 | Framework de testes (Unit, Integration, Functional) |
+| ![Bogus](https://img.shields.io/badge/Bogus-35.6-512BD4?style=flat&logo=dotnet) | 35.6 | Geração de dados falsos (Unit) |
+| ![NSubstitute](https://img.shields.io/badge/NSubstitute-5.1-512BD4?style=flat&logo=dotnet) | 5.1 | Mocking (Unit) |
+| ![FluentAssertions](https://img.shields.io/badge/FluentAssertions-6.12-00B4AB?style=flat&logo=dotnet) | 6.12 | Asserções expressivas (todos os projetos) |
+| ![MockQueryable](https://img.shields.io/badge/MockQueryable-7.0-512BD4?style=flat&logo=dotnet) | 7.0 | Mock de IQueryable async (Unit) |
+| ![Testcontainers](https://img.shields.io/badge/Testcontainers-3.10-2496ED?style=flat&logo=docker) | 3.10 | PostgreSQL real nos testes Integration e Functional |
 
 ### Infraestrutura
 | Tecnologia | Versão | Uso |
@@ -331,6 +331,27 @@ dotnet test Ambev.DeveloperEvaluation.sln --filter "FullyQualifiedName~Integrati
 > ⚠️ Docker deve estar rodando — os testes sobem automaticamente um container PostgreSQL via **Testcontainers**.
 > Um único container é compartilhado entre todas as suites (`ICollectionFixture`) — inicialização rápida (~15s).
 
+### Testes Funcionais
+
+```bash
+dotnet test Ambev.DeveloperEvaluation.sln --filter "FullyQualifiedName~Functional"
+```
+
+<div align="center">
+
+![Tests](https://img.shields.io/badge/Functional_Tests-3_passing-brightgreen?style=for-the-badge)
+![Failures](https://img.shields.io/badge/Failures-0-brightgreen?style=for-the-badge)
+
+</div>
+
+| Cenário | O que verifica |
+|---|---|
+| Discount tiers across all brackets | Sem desconto (3 itens), 10% (5 itens), 20% (15 itens) — todos em um único fluxo autenticado |
+| Maximum quantity enforcement | Venda com 21 itens é rejeitada com 400 (regra de negócio crítica) |
+| Item cancellation state | Cancelar item via PATCH marca o item como cancelado sem cancelar a venda |
+
+> ⚠️ Docker deve estar rodando — os testes funcionais sobem um container PostgreSQL **isolado** do container de integração.
+
 ---
 
 ## Estrutura do Projeto
@@ -362,9 +383,12 @@ template/backend/
     │   ├── Domain/            # Entity tests, Validator tests, Event tests
     │   ├── Application/       # Handler tests, Mapping tests
     │   └── Infrastructure/    # LoggingEventPublisher tests
-    └── Ambev.DeveloperEvaluation.Integration/
-        ├── Fixtures/          # IntegrationTestFactory (Testcontainers), BaseIntegrationTest
-        └── Features/          # Auth, Products, Sales, Carts, E2E — 32 testes
+    ├── Ambev.DeveloperEvaluation.Integration/
+    │   ├── Fixtures/          # IntegrationTestFactory (Testcontainers), BaseIntegrationTest
+    │   └── Features/          # Auth, Products, Sales, Carts, E2E — 32 testes
+    └── Ambev.DeveloperEvaluation.Functional/
+        ├── Fixtures/          # FunctionalTestFactory (container isolado), BaseFunctionalTest
+        └── Scenarios/         # SalesBusinessRulesTests — 3 cenários de negócio
 ```
 
 ---
@@ -377,7 +401,7 @@ O que seria evoluído com mais tempo:
 |---|---|
 | **Message Broker real** | Substituir o `LoggingEventPublisher` por integração com RabbitMQ ou Azure Service Bus via Rebus, mantendo o Polly retry já implementado |
 | **Testes unitários de Cart** | Handlers e validators do domínio Cart cobertos da mesma forma que Sale e Product |
-| ~~**Testes funcionais**~~ | ✅ Implementado: suite E2E nos testes de integração (produto → carrinho → venda com verificação de desconto) |
+| ~~**Testes funcionais**~~ | ✅ Implementado: `Ambev.DeveloperEvaluation.Functional` com 3 cenários de negócio (tiers de desconto, limite de quantidade, cancelamento de item) |
 | **API versioning** | Versionamento de rotas (`/api/v1/`) para suportar evolução sem quebrar clientes |
 | **Rate limiting** | Throttling por IP/usuário nos endpoints públicos (auth, criação de usuário) |
 | **CI/CD pipeline** | GitHub Actions com build, testes, relatório de cobertura e push de imagem Docker |
