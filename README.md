@@ -54,7 +54,7 @@ O **DeveloperStore API** é uma API RESTful completa para gestão de um sistema 
 - **Eventos de domínio** publicados a cada operação relevante
 - **Autenticação JWT** em todos os endpoints protegidos
 - **Paginação e filtros** em todos os endpoints de listagem
-- **~91% de cobertura** nos testes unitários (201 testes)
+- **~91% de cobertura** nos testes unitários (204 testes)
 
 ---
 
@@ -105,7 +105,7 @@ src/
 └── Ambev.DeveloperEvaluation.Common        # Utilitários compartilhados
 
 tests/
-├── Ambev.DeveloperEvaluation.Unit          # Testes unitários (~89% cobertura, 201 testes)
+├── Ambev.DeveloperEvaluation.Unit          # Testes unitários (~91% cobertura, 204 testes)
 ├── Ambev.DeveloperEvaluation.Integration   # Testes de integração com Testcontainers
 └── Ambev.DeveloperEvaluation.Functional    # Testes funcionais
 ```
@@ -217,7 +217,8 @@ Todas as variáveis já estão configuradas no `docker-compose.override.yml`. Pa
 | `POST` | `/api/users` | Criar usuário (schema aninhado: `name`, `address`) | ❌ |
 | `GET` | `/api/users` | Listar usuários (paginado: `_page`, `_size`, `_order`) | ✅ |
 | `GET` | `/api/users/{id}` | Buscar usuário por ID | ✅ |
-| `PUT` | `/api/users/{id}` | Atualizar usuário | ✅ |
+| `PUT` | `/api/users/{id}` | Atualizar perfil (owner ou Admin) | ✅ |
+| `PATCH` | `/api/users/{id}/role` | Alterar role/status do usuário | ✅ Admin |
 | `DELETE` | `/api/users/{id}` | Deletar usuário | ✅ |
 
 ### 📦 Products
@@ -302,7 +303,7 @@ dotnet test Ambev.DeveloperEvaluation.sln --filter "FullyQualifiedName~Unit"
 <div align="center">
 
 ![Coverage](https://img.shields.io/badge/Line_Coverage-91%25-brightgreen?style=for-the-badge)
-![Tests](https://img.shields.io/badge/Tests-201_passing-brightgreen?style=for-the-badge)
+![Tests](https://img.shields.io/badge/Tests-204_passing-brightgreen?style=for-the-badge)
 ![Failures](https://img.shields.io/badge/Failures-0-brightgreen?style=for-the-badge)
 
 </div>
@@ -330,7 +331,7 @@ dotnet test Ambev.DeveloperEvaluation.sln --filter "FullyQualifiedName~Integrati
 
 <div align="center">
 
-![Tests](https://img.shields.io/badge/Integration_Tests-32_passing-brightgreen?style=for-the-badge)
+![Tests](https://img.shields.io/badge/Integration_Tests-38_passing-brightgreen?style=for-the-badge)
 ![Failures](https://img.shields.io/badge/Failures-0-brightgreen?style=for-the-badge)
 
 </div>
@@ -338,6 +339,7 @@ dotnet test Ambev.DeveloperEvaluation.sln --filter "FullyQualifiedName~Integrati
 | Suite | Testes | Cobertura |
 |---|---|---|
 | Auth / Users | 7 | Registro, autenticação, JWT, 401 |
+| Users (ownership + admin role) | 6 | PUT ownership check (200/403/401), PATCH role (200/403/401/404) |
 | Products | 7 | CRUD completo, listagem paginada, 401 |
 | Sales | 8 | CRUD, regras de desconto (10%/20%), cancelamento de item, 401 |
 | Carts | 7 | CRUD completo, listagem paginada, 401 |
@@ -384,7 +386,7 @@ template/backend/
 │   │   ├── Sales/             # Create, Get, GetList, Update, Delete, CancelItem
 │   │   ├── Carts/             # Create, Get, GetList, Update, Delete
 │   │   ├── Products/          # Create, Get, GetList, Categories, Update, Delete
-│   │   ├── Users/             # Create, Get, GetList, Update, Delete
+│   │   ├── Users/             # Create, Get, GetList, Update, PatchUserRole, Delete
 │   │   └── Auth/              # AuthenticateUser (login por username)
 │   ├── Ambev.DeveloperEvaluation.ORM/
 │   │   ├── Repositories/      # SaleRepository, CartRepository, ProductRepository
@@ -400,7 +402,7 @@ template/backend/
     │   └── Infrastructure/    # LoggingEventPublisher tests
     ├── Ambev.DeveloperEvaluation.Integration/
     │   ├── Fixtures/          # IntegrationTestFactory (Testcontainers), BaseIntegrationTest
-    │   └── Features/          # Auth, Products, Sales, Carts, E2E — 32 testes
+    │   └── Features/          # Auth, Users, Products, Sales, Carts, E2E — 38 testes
     └── Ambev.DeveloperEvaluation.Functional/
         ├── Fixtures/          # FunctionalTestFactory (container isolado), BaseFunctionalTest
         └── Scenarios/         # SalesBusinessRulesTests — 3 cenários de negócio
@@ -459,6 +461,8 @@ O que seria evoluído com mais tempo:
 | **JWT Issuer + Audience validados** | `ValidateIssuer` e `ValidateAudience` habilitados; token gerado inclui `iss` e `aud` — tokens de outros sistemas ou chaves diferentes são rejeitados |
 | **JWT expiry lido do config** | `JwtTokenGenerator` lê `Jwt:ExpiryMinutes` (padrão 60 min) — sem valor hardcoded; alterável por variável de ambiente sem rebuild |
 | **JWT secret com mínimo 32 bytes** | `AddJwtAuthentication` valida comprimento mínimo da chave (requisito HS256 / RFC 7518) na inicialização da aplicação |
+| **Ownership check em `PUT /api/users/{id}`** | OWASP A01:2021 — qualquer usuário autenticado poderia atualizar o perfil de outro. O controller extrai o GUID do `ClaimTypes.NameIdentifier` e retorna 403 se não for o dono nem Admin |
+| **`PATCH /api/users/{id}/role` — admin only** | Separar a escalada de role num endpoint dedicado com `[Authorize(Roles = "Admin")]` elimina o vetor de privilege escalation via `PUT /api/users/{id}` sem remover a funcionalidade de gestão de roles para administradores |
 
 ---
 

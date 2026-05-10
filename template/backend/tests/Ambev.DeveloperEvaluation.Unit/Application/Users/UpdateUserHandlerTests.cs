@@ -1,7 +1,6 @@
 using Ambev.DeveloperEvaluation.Application.Users.UpdateUser;
 using Ambev.DeveloperEvaluation.Common.Security;
 using Ambev.DeveloperEvaluation.Domain.Entities;
-using Ambev.DeveloperEvaluation.Domain.Enums;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
 using Ambev.DeveloperEvaluation.Unit.Domain.Entities.TestData;
 using AutoMapper;
@@ -38,8 +37,6 @@ public class UpdateUserHandlerTests
             Username = "updateduser",
             Email = "updated@test.com",
             Phone = "+5547999999999",
-            Status = UserStatus.Active,
-            Role = UserRole.Customer,
             FirstName = "Updated",
             LastName = "User",
             City = "Sao Paulo",
