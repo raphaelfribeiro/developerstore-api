@@ -27,8 +27,6 @@ public class UpdateUserHandler : IRequestHandler<UpdateUserCommand, UpdateUserRe
         user.Username = request.Username;
         user.Email = request.Email;
         user.Phone = request.Phone;
-        user.Status = request.Status;
-        user.Role = request.Role;
         user.FirstName = request.FirstName;
         user.LastName = request.LastName;
         user.City = request.City;

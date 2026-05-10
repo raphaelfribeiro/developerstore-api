@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -8,11 +9,13 @@ using Ambev.DeveloperEvaluation.WebApi.Features.Users.GetUser;
 using Ambev.DeveloperEvaluation.WebApi.Features.Users.GetUsers;
 using Ambev.DeveloperEvaluation.WebApi.Features.Users.DeleteUser;
 using Ambev.DeveloperEvaluation.WebApi.Features.Users.UpdateUser;
+using Ambev.DeveloperEvaluation.WebApi.Features.Users.PatchUserRole;
 using Ambev.DeveloperEvaluation.Application.Users.CreateUser;
 using Ambev.DeveloperEvaluation.Application.Users.GetUser;
 using Ambev.DeveloperEvaluation.Application.Users.GetUsers;
 using Ambev.DeveloperEvaluation.Application.Users.DeleteUser;
 using Ambev.DeveloperEvaluation.Application.Users.UpdateUser;
+using Ambev.DeveloperEvaluation.Application.Users.PatchUserRole;
 using Ambev.DeveloperEvaluation.Application.Common;
 
 namespace Ambev.DeveloperEvaluation.WebApi.Features.Users;
@@ -98,6 +101,7 @@ public class UsersController : BaseController
     [HttpPut("{id}")]
     [ProducesResponseType(typeof(ApiResponseWithData<UpdateUserResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdateUser(
         [FromRoute] Guid id,
@@ -106,6 +110,11 @@ public class UsersController : BaseController
     {
         if (request is null)
             return BadRequest("Request body is required.");
+
+        var callerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var isAdmin = User.IsInRole("Admin");
+        if (!isAdmin && (!Guid.TryParse(callerId, out var callerGuid) || callerGuid != id))
+            return Forbid();
 
         var validator = new UpdateUserRequestValidator();
         var validation = await validator.ValidateAsync(request, cancellationToken);
@@ -118,6 +127,24 @@ public class UsersController : BaseController
         var result = await _mediator.Send(command, cancellationToken);
 
         return Ok(_mapper.Map<UpdateUserResponse>(result), "User updated successfully");
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpPatch("{id}/role")]
+    [ProducesResponseType(typeof(ApiResponseWithData<PatchUserRoleResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> PatchUserRole(
+        [FromRoute] Guid id,
+        [FromBody] PatchUserRoleRequest request,
+        CancellationToken cancellationToken)
+    {
+        var command = _mapper.Map<PatchUserRoleCommand>(request);
+        command.Id = id;
+
+        var result = await _mediator.Send(command, cancellationToken);
+
+        return Ok(_mapper.Map<PatchUserRoleResponse>(result), "User role updated successfully");
     }
 
     [Authorize]
