@@ -1,6 +1,5 @@
 using Ambev.DeveloperEvaluation.Application.Common;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace Ambev.DeveloperEvaluation.WebApi.Common;
 
@@ -8,20 +7,11 @@ namespace Ambev.DeveloperEvaluation.WebApi.Common;
 [ApiController]
 public class BaseController : ControllerBase
 {
-    protected int GetCurrentUserId() =>
-        int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? throw new NullReferenceException());
-
-    protected string GetCurrentUserEmail() =>
-        User.FindFirst(ClaimTypes.Email)?.Value ?? throw new NullReferenceException();
-
     protected IActionResult Ok<T>(T data) =>
         base.Ok(new ApiResponseWithData<T> { Data = data, Success = true });
 
     protected IActionResult Ok<T>(T data, string message) =>
         base.Ok(new ApiResponseWithData<T> { Data = data, Success = true, Message = message });
-
-    protected IActionResult Created<T>(string routeName, object routeValues, T data) =>
-        base.CreatedAtRoute(routeName, routeValues, new ApiResponseWithData<T> { Data = data, Success = true });
 
     protected IActionResult BadRequest(string message) =>
         base.BadRequest(new ApiResponse { Message = message, Success = false });
@@ -29,23 +19,6 @@ public class BaseController : ControllerBase
     protected IActionResult NotFound(string message = "Resource not found") =>
         base.NotFound(new ApiResponse { Message = message, Success = false });
 
-    /// <summary>
-    /// Returns a paginated response using the existing PaginatedList from WebApi.
-    /// </summary>
-    protected IActionResult OkPaginated<T>(PaginatedList<T> pagedList) =>
-        base.Ok(new PaginatedResponse<T>
-        {
-            Data = pagedList,
-            CurrentPage = pagedList.CurrentPage,
-            TotalPages = pagedList.TotalPages,
-            TotalCount = pagedList.TotalCount,
-            Success = true
-        });
-
-    /// <summary>
-    /// Returns a paginated response using PaginatedResult from the Application layer.
-    /// Used by Sale, Cart, and Product list endpoints.
-    /// </summary>
     protected IActionResult OkPaginated<T>(PaginatedResult<T> result) =>
         base.Ok(new PaginatedResponse<T>
         {

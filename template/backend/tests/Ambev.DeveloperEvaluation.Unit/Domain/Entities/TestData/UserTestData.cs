@@ -84,19 +84,6 @@ public static class UserTestData
     }
 
     /// <summary>
-    /// Generates a valid username.
-    /// The generated username will:
-    /// - Be between 3 and 50 characters
-    /// - Use internet username conventions
-    /// - Contain only valid characters
-    /// </summary>
-    /// <returns>A valid username.</returns>
-    public static string GenerateValidUsername()
-    {
-        return new Faker().Internet.UserName();
-    }
-
-    /// <summary>
     /// Generates an invalid email address for testing negative scenarios.
     /// The generated email will:
     /// - Not follow the standard email format
