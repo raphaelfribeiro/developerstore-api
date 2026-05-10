@@ -9,6 +9,7 @@ namespace Ambev.DeveloperEvaluation.Integration.Features.Auth;
 /// <summary>
 /// Integration tests for Auth and Users API endpoints.
 /// </summary>
+[Collection("Integration")]
 public class AuthIntegrationTests : BaseIntegrationTest
 {
     public AuthIntegrationTests(IntegrationTestFactory factory) : base(factory) { }
@@ -90,8 +91,8 @@ public class AuthIntegrationTests : BaseIntegrationTest
         content.Should().Contain("token");
     }
 
-    [Fact(DisplayName = "POST /api/auth When invalid credentials Then returns 400 Bad Request")]
-    public async Task Authenticate_InvalidCredentials_Returns400()
+    [Fact(DisplayName = "POST /api/auth When invalid credentials Then returns 401 Unauthorized")]
+    public async Task Authenticate_InvalidCredentials_Returns401()
     {
         var loginRequest = new
         {
@@ -132,6 +133,16 @@ public class AuthIntegrationTests : BaseIntegrationTest
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [Fact(DisplayName = "GET /api/users/{id} Without authentication Then returns 401 Unauthorized")]
+    public async Task GetUser_WithoutAuth_Returns401()
+    {
+        var unauthClient = CreateUnauthenticatedClient();
+
+        var response = await unauthClient.GetAsync($"/api/users/{Guid.NewGuid()}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
     [Fact(DisplayName = "DELETE /api/users/{id} When authenticated Then returns 200 OK")]

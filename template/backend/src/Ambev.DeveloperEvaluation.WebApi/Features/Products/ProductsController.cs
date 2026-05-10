@@ -1,5 +1,6 @@
 using AutoMapper;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Ambev.DeveloperEvaluation.Application.Products.CreateProduct;
 using Ambev.DeveloperEvaluation.Application.Products.DeleteProduct;
@@ -14,6 +15,7 @@ namespace Ambev.DeveloperEvaluation.WebApi.Features.Products;
 /// Controller for managing product catalogue operations.
 /// Provides full CRUD, category listing, and category-filtered product queries.
 /// </summary>
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class ProductsController : BaseController

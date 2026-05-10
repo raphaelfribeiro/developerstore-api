@@ -9,10 +9,14 @@ using Xunit;
 
 namespace Ambev.DeveloperEvaluation.Integration.Fixtures;
 
+[CollectionDefinition("Integration")]
+public class IntegrationCollection : ICollectionFixture<IntegrationTestFactory> { }
+
 /// <summary>
 /// Custom WebApplicationFactory that spins up a real PostgreSQL container
 /// using Testcontainers for integration tests.
-/// Implements IAsyncLifetime so the container starts before tests and stops after.
+/// Shared across all test classes via the "Integration" collection fixture,
+/// so only one container starts for the entire integration test suite.
 /// </summary>
 public class IntegrationTestFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
@@ -26,28 +30,25 @@ public class IntegrationTestFactory : WebApplicationFactory<Program>, IAsyncLife
     public async Task InitializeAsync()
     {
         await _postgres.StartAsync();
+        // Services triggers the host build with ConfigureWebHost already applied,
+        // so the DbContext points to the test container at migration time.
+        using var scope = Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<DefaultContext>();
+        await db.Database.MigrateAsync();
     }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.ConfigureServices(services =>
         {
-            // Remove existing DefaultContext registration
             var descriptor = services.SingleOrDefault(
                 d => d.ServiceType == typeof(DbContextOptions<DefaultContext>));
 
             if (descriptor != null)
                 services.Remove(descriptor);
 
-            // Register DefaultContext pointing to test container
             services.AddDbContext<DefaultContext>(options =>
                 options.UseNpgsql(_postgres.GetConnectionString()));
-
-            // Apply migrations to test database
-            var sp = services.BuildServiceProvider();
-            using var scope = sp.CreateScope();
-            var db = scope.ServiceProvider.GetRequiredService<DefaultContext>();
-            db.Database.Migrate();
         });
 
         builder.UseEnvironment("Testing");

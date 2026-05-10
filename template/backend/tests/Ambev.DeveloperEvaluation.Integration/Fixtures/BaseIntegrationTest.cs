@@ -1,16 +1,18 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
-using Xunit;
 
 namespace Ambev.DeveloperEvaluation.Integration.Fixtures;
 
 /// <summary>
 /// Base class for all integration tests.
 /// Provides HttpClient, authentication helpers and JSON serialization utilities.
+/// xUnit creates a new test class instance per test method, so each test
+/// starts with a fresh Client and no Authorization header set.
 /// </summary>
-public abstract class BaseIntegrationTest : IClassFixture<IntegrationTestFactory>
+public abstract class BaseIntegrationTest
 {
+    private readonly IntegrationTestFactory _factory;
     protected readonly HttpClient Client;
 
     protected readonly JsonSerializerOptions JsonOptions = new()
@@ -21,8 +23,15 @@ public abstract class BaseIntegrationTest : IClassFixture<IntegrationTestFactory
 
     protected BaseIntegrationTest(IntegrationTestFactory factory)
     {
+        _factory = factory;
         Client = factory.CreateClient();
     }
+
+    /// <summary>
+    /// Creates a fresh HttpClient with no Authorization header.
+    /// Use this in 401-Unauthorized tests to ensure no token is sent.
+    /// </summary>
+    protected HttpClient CreateUnauthenticatedClient() => _factory.CreateClient();
 
     /// <summary>
     /// Creates a user and authenticates, returning the JWT token.
@@ -32,20 +41,18 @@ public abstract class BaseIntegrationTest : IClassFixture<IntegrationTestFactory
         string password = "ValidPassword@123",
         string username = "integrationuser")
     {
-        // Register user
         var registerRequest = new
         {
             username,
             email,
             password,
             phone = "+5547999999999",
-            role = 1, // Manager
-            status = 1 // Active
+            role = 1,
+            status = 1
         };
 
         await Client.PostAsJsonAsync("/api/users", registerRequest);
 
-        // Authenticate
         var loginRequest = new { email, password };
         var response = await Client.PostAsJsonAsync("/api/auth", loginRequest);
         response.EnsureSuccessStatusCode();

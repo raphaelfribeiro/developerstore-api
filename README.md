@@ -313,7 +313,23 @@ Relatório HTML gerado em `coverage-report/index.html`.
 dotnet test Ambev.DeveloperEvaluation.sln --filter "FullyQualifiedName~Integration"
 ```
 
+<div align="center">
+
+![Tests](https://img.shields.io/badge/Integration_Tests-32_passing-brightgreen?style=for-the-badge)
+![Failures](https://img.shields.io/badge/Failures-0-brightgreen?style=for-the-badge)
+
+</div>
+
+| Suite | Testes | Cobertura |
+|---|---|---|
+| Auth / Users | 7 | Registro, autenticação, JWT, 401 |
+| Products | 7 | CRUD completo, listagem paginada, 401 |
+| Sales | 8 | CRUD, regras de desconto (10%/20%), cancelamento de item, 401 |
+| Carts | 7 | CRUD completo, listagem paginada, 401 |
+| E2E | 3 | Fluxo completo: produto → carrinho → venda com desconto |
+
 > ⚠️ Docker deve estar rodando — os testes sobem automaticamente um container PostgreSQL via **Testcontainers**.
+> Um único container é compartilhado entre todas as suites (`ICollectionFixture`) — inicialização rápida (~15s).
 
 ---
 
@@ -347,7 +363,8 @@ template/backend/
     │   ├── Application/       # Handler tests, Mapping tests
     │   └── Infrastructure/    # LoggingEventPublisher tests
     └── Ambev.DeveloperEvaluation.Integration/
-        └── Features/          # Auth, Products, Sales integration tests
+        ├── Fixtures/          # IntegrationTestFactory (Testcontainers), BaseIntegrationTest
+        └── Features/          # Auth, Products, Sales, Carts, E2E — 32 testes
 ```
 
 ---
@@ -360,7 +377,7 @@ O que seria evoluído com mais tempo:
 |---|---|
 | **Message Broker real** | Substituir o `LoggingEventPublisher` por integração com RabbitMQ ou Azure Service Bus via Rebus, mantendo o Polly retry já implementado |
 | **Testes unitários de Cart** | Handlers e validators do domínio Cart cobertos da mesma forma que Sale e Product |
-| **Testes funcionais** | Suite de testes end-to-end simulando fluxos completos (criar usuário → autenticar → criar produto → criar venda) |
+| ~~**Testes funcionais**~~ | ✅ Implementado: suite E2E nos testes de integração (produto → carrinho → venda com verificação de desconto) |
 | **API versioning** | Versionamento de rotas (`/api/v1/`) para suportar evolução sem quebrar clientes |
 | **Rate limiting** | Throttling por IP/usuário nos endpoints públicos (auth, criação de usuário) |
 | **CI/CD pipeline** | GitHub Actions com build, testes, relatório de cobertura e push de imagem Docker |
@@ -390,6 +407,8 @@ O que seria evoluído com mais tempo:
 | **SuppressModelStateInvalidFilter** | Garante que todas as validações passem pelo middleware customizado |
 | **Production no Docker** | Ambiente correto para containers — `Development` causa instabilidade com DataProtection no Linux |
 | **Kestrel explícito na porta 8080** | Garante binding correto independente de variáveis de ambiente |
+| **`[Authorize]` nos controllers** | Products, Carts e Sales exigem JWT Bearer em todos os endpoints; Users expõe somente `POST /api/users` como público (registro) |
+| **`ICollectionFixture` nos testes de integração** | Um único container PostgreSQL compartilhado entre todas as suites — elimina o anti-pattern `BuildServiceProvider()` e reduz o tempo de setup de minutos para ~15s |
 
 ---
 
