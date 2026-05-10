@@ -54,8 +54,8 @@
                 "exec": [
                   "pm.test('Status 200 OK', function () { pm.response.to.have.status(200); });",
                   "var json = pm.response.json();",
-                  "if (json.data && json.data.token) {",
-                  "    pm.collectionVariables.set('token', json.data.token);",
+                  "if (json.token) {",
+                  "    pm.collectionVariables.set('token', json.token);",
                   "}"
                 ]
               }
@@ -64,10 +64,10 @@
           "request": {
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": "{{baseUrl}}/api/auth",
+            "url": "{{baseUrl}}/api/auth/login",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"raphaelfribeiro@gmail.com\",\n  \"password\": \"Test@123456\"\n}"
+              "raw": "{\n  \"username\": \"raphaelribeiro\",\n  \"password\": \"Test@123456\"\n}"
             }
           }
         }
@@ -161,7 +161,7 @@
                   "pm.test('Response is paginated', function () {",
                   "    var json = pm.response.json();",
                   "    pm.expect(json).to.have.property('currentPage');",
-                  "    pm.expect(json).to.have.property('totalCount');",
+                  "    pm.expect(json).to.have.property('totalItems');",
                   "});"
                 ]
               }
@@ -171,10 +171,10 @@
             "method": "GET",
             "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
             "url": {
-              "raw": "{{baseUrl}}/api/products?page=1&size=10",
+              "raw": "{{baseUrl}}/api/products?_page=1&_size=10",
               "query": [
-                { "key": "page", "value": "1" },
-                { "key": "size", "value": "10" }
+                { "key": "_page", "value": "1" },
+                { "key": "_size", "value": "10" }
               ]
             }
           }
@@ -231,7 +231,7 @@
                   "pm.test('Response is paginated', function () {",
                   "    var json = pm.response.json();",
                   "    pm.expect(json).to.have.property('currentPage');",
-                  "    pm.expect(json).to.have.property('totalCount');",
+                  "    pm.expect(json).to.have.property('totalItems');",
                   "});"
                 ]
               }
@@ -241,10 +241,10 @@
             "method": "GET",
             "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
             "url": {
-              "raw": "{{baseUrl}}/api/products/category/men's clothing?page=1&size=10",
+              "raw": "{{baseUrl}}/api/products/category/men's clothing?_page=1&_size=10",
               "query": [
-                { "key": "page", "value": "1" },
-                { "key": "size", "value": "10" }
+                { "key": "_page", "value": "1" },
+                { "key": "_size", "value": "10" }
               ]
             }
           }
@@ -349,7 +349,7 @@
                   "pm.test('Response is paginated', function () {",
                   "    var json = pm.response.json();",
                   "    pm.expect(json).to.have.property('currentPage');",
-                  "    pm.expect(json).to.have.property('totalCount');",
+                  "    pm.expect(json).to.have.property('totalItems');",
                   "});"
                 ]
               }
@@ -359,10 +359,10 @@
             "method": "GET",
             "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
             "url": {
-              "raw": "{{baseUrl}}/api/carts?page=1&size=10",
+              "raw": "{{baseUrl}}/api/carts?_page=1&_size=10",
               "query": [
-                { "key": "page", "value": "1" },
-                { "key": "size", "value": "10" }
+                { "key": "_page", "value": "1" },
+                { "key": "_size", "value": "10" }
               ]
             }
           }
@@ -506,7 +506,7 @@
                   "pm.test('Response is paginated', function () {",
                   "    var json = pm.response.json();",
                   "    pm.expect(json).to.have.property('currentPage');",
-                  "    pm.expect(json).to.have.property('totalCount');",
+                  "    pm.expect(json).to.have.property('totalItems');",
                   "});"
                 ]
               }
@@ -516,10 +516,10 @@
             "method": "GET",
             "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
             "url": {
-              "raw": "{{baseUrl}}/api/sales?page=1&size=10",
+              "raw": "{{baseUrl}}/api/sales?_page=1&_size=10",
               "query": [
-                { "key": "page", "value": "1" },
-                { "key": "size", "value": "10" }
+                { "key": "_page", "value": "1" },
+                { "key": "_size", "value": "10" }
               ]
             }
           }

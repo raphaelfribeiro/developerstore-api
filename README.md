@@ -13,7 +13,7 @@
 ![FluentValidation](https://img.shields.io/badge/FluentValidation-11.x-00B4AB?style=for-the-badge&logo=dotnet&logoColor=white)
 
 ![xUnit](https://img.shields.io/badge/xUnit-2.9-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)
-![Coverage](https://img.shields.io/badge/Coverage-92%25-brightgreen?style=for-the-badge&logo=dotnet&logoColor=white)
+![Coverage](https://img.shields.io/badge/Coverage-91%25-brightgreen?style=for-the-badge&logo=dotnet&logoColor=white)
 ![Swagger](https://img.shields.io/badge/Swagger-OpenAPI_3.0-85EA2D?style=for-the-badge&logo=swagger&logoColor=black)
 ![Serilog](https://img.shields.io/badge/Serilog-8.x-EF5B25?style=for-the-badge&logo=dotnet&logoColor=white)
 
@@ -54,7 +54,7 @@ O **DeveloperStore API** é uma API RESTful completa para gestão de um sistema 
 - **Eventos de domínio** publicados a cada operação relevante
 - **Autenticação JWT** em todos os endpoints protegidos
 - **Paginação e filtros** em todos os endpoints de listagem
-- **92% de cobertura** nos testes unitários
+- **~91% de cobertura** nos testes unitários (201 testes)
 
 ---
 
@@ -105,7 +105,7 @@ src/
 └── Ambev.DeveloperEvaluation.Common        # Utilitários compartilhados
 
 tests/
-├── Ambev.DeveloperEvaluation.Unit          # Testes unitários (92% cobertura)
+├── Ambev.DeveloperEvaluation.Unit          # Testes unitários (~89% cobertura, 201 testes)
 ├── Ambev.DeveloperEvaluation.Integration   # Testes de integração com Testcontainers
 └── Ambev.DeveloperEvaluation.Functional    # Testes funcionais
 ```
@@ -208,14 +208,16 @@ Todas as variáveis já estão configuradas no `docker-compose.override.yml`. Pa
 
 | Método | Rota | Descrição | Auth |
 |---|---|---|---|
-| `POST` | `/api/auth` | Autenticar usuário | ❌ |
+| `POST` | `/api/auth/login` | Autenticar usuário (campo: `username`) | ❌ |
 
 ### 👤 Users
 
 | Método | Rota | Descrição | Auth |
 |---|---|---|---|
-| `POST` | `/api/users` | Criar usuário | ❌ |
+| `POST` | `/api/users` | Criar usuário (schema aninhado: `name`, `address`) | ❌ |
+| `GET` | `/api/users` | Listar usuários (paginado: `_page`, `_size`, `_order`) | ✅ |
 | `GET` | `/api/users/{id}` | Buscar usuário por ID | ✅ |
+| `PUT` | `/api/users/{id}` | Atualizar usuário | ✅ |
 | `DELETE` | `/api/users/{id}` | Deletar usuário | ✅ |
 
 ### 📦 Products
@@ -251,24 +253,37 @@ Todas as variáveis já estão configuradas no `docker-compose.override.yml`. Pa
 | `PATCH` | `/api/sales/{id}/items/{itemId}/cancel` | Cancelar item | ✅ |
 | `DELETE` | `/api/sales/{id}` | Cancelar e deletar venda | ✅ |
 
-### Formato de resposta padrão
+### Formato de resposta padrão (sucesso)
 
 ```json
 {
   "data": { },
   "success": true,
-  "message": "Operation successful",
-  "errors": []
+  "message": "Operation successful"
+}
+```
+
+### Formato de resposta de erro
+
+```json
+{
+  "type": "ValidationError",
+  "error": "Invalid request",
+  "detail": "Username must be between 3 and 50 characters"
 }
 ```
 
 ### Paginação
 
+Parâmetros de query com prefixo `_`:
+- `_page` (padrão: 1), `_size` (padrão: 10), `_order` (ex: `username desc`)
+- Filtros adicionais: `_minPrice`, `_maxPrice` (Products), `_minDate`, `_maxDate` (Carts, Sales)
+
 ```json
 {
   "currentPage": 1,
   "totalPages": 3,
-  "totalCount": 30,
+  "totalItems": 30,
   "data": []
 }
 ```
@@ -286,8 +301,8 @@ dotnet test Ambev.DeveloperEvaluation.sln --filter "FullyQualifiedName~Unit"
 
 <div align="center">
 
-![Coverage](https://img.shields.io/badge/Line_Coverage-92%25-brightgreen?style=for-the-badge)
-![Tests](https://img.shields.io/badge/Tests-193_passing-brightgreen?style=for-the-badge)
+![Coverage](https://img.shields.io/badge/Line_Coverage-91%25-brightgreen?style=for-the-badge)
+![Tests](https://img.shields.io/badge/Tests-201_passing-brightgreen?style=for-the-badge)
 ![Failures](https://img.shields.io/badge/Failures-0-brightgreen?style=for-the-badge)
 
 </div>
@@ -369,12 +384,12 @@ template/backend/
 │   │   ├── Sales/             # Create, Get, GetList, Update, Delete, CancelItem
 │   │   ├── Carts/             # Create, Get, GetList, Update, Delete
 │   │   ├── Products/          # Create, Get, GetList, Categories, Update, Delete
-│   │   ├── Users/             # Create, Get, Delete
-│   │   └── Auth/              # AuthenticateUser
+│   │   ├── Users/             # Create, Get, GetList, Update, Delete
+│   │   └── Auth/              # AuthenticateUser (login por username)
 │   ├── Ambev.DeveloperEvaluation.ORM/
 │   │   ├── Repositories/      # SaleRepository, CartRepository, ProductRepository
 │   │   ├── Services/          # LoggingEventPublisher (Polly retry)
-│   │   └── Migrations/        # InitialMigrations, AddSaleCartProduct
+│   │   └── Migrations/        # InitialMigrations, AddSaleCartProduct, AddUserProfileFields
 │   └── Ambev.DeveloperEvaluation.WebApi/
 │       ├── Features/          # Controllers, Requests, Responses, Profiles
 │       └── Middleware/        # ValidationExceptionMiddleware
@@ -417,7 +432,7 @@ O que seria evoluído com mais tempo:
 
 | Pasta | Requests | Scripts |
 |---|---|---|
-| Auth | Create User, Authenticate | Salva `userId` e `token` automaticamente |
+| Auth | Create User, Authenticate | Login por `username`; salva `userId` e `token` automaticamente |
 | Users | Get User, Delete User | Valida status 200 |
 | Products | Create, Get All, Get by ID, Categories, By Category, Update, Delete | Salva `productId`; valida status e paginação |
 | Carts | Create, Get All, Get by ID, Update, Delete | Data dinâmica via Pre-request; salva `cartId` |
@@ -454,6 +469,6 @@ O que seria evoluído com mais tempo:
 ![.NET](https://img.shields.io/badge/.NET-8.0-512BD4?style=flat&logo=dotnet&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-13-4169E1?style=flat&logo=postgresql&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat&logo=docker&logoColor=white)
-![Coverage](https://img.shields.io/badge/Coverage-92%25-brightgreen?style=flat)
+![Coverage](https://img.shields.io/badge/Coverage-91%25-brightgreen?style=flat)
 
 </div>
