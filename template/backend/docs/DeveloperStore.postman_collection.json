@@ -1,17 +1,19 @@
 {
   "info": {
     "name": "DeveloperStore API",
-    "description": "Complete API collection for the DeveloperStore challenge — Sales, Carts, Products, Users and Auth endpoints.",
+    "description": "Complete API collection for the DeveloperStore challenge — Sales, Carts, Products, Users and Auth endpoints.\n\nExecution order: Auth → Users → Products → Carts → Sales.\nVariables are saved automatically by test scripts — just run requests in sequence.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
-    { "key": "baseUrl", "value": "http://localhost:8080", "type": "string" },
-    { "key": "token", "value": "", "type": "string" },
-    { "key": "userId", "value": "", "type": "string" },
-    { "key": "productId", "value": "", "type": "string" },
-    { "key": "cartId", "value": "", "type": "string" },
-    { "key": "saleId", "value": "", "type": "string" },
-    { "key": "saleItemId", "value": "", "type": "string" }
+    { "key": "baseUrl",    "value": "http://localhost:8080", "type": "string" },
+    { "key": "token",      "value": "", "type": "string" },
+    { "key": "userId",     "value": "", "type": "string" },
+    { "key": "productId",  "value": "", "type": "string" },
+    { "key": "cartId",     "value": "", "type": "string" },
+    { "key": "saleId",     "value": "", "type": "string" },
+    { "key": "saleItemId", "value": "", "type": "string" },
+    { "key": "saleNumber", "value": "", "type": "string" },
+    { "key": "today",      "value": "", "type": "string" }
   ],
   "item": [
     {
@@ -24,6 +26,7 @@
               "listen": "test",
               "script": {
                 "exec": [
+                  "pm.test('Status 201 Created', function () { pm.response.to.have.status(201); });",
                   "var json = pm.response.json();",
                   "if (json.data && json.data.id) {",
                   "    pm.collectionVariables.set('userId', json.data.id);",
@@ -49,6 +52,7 @@
               "listen": "test",
               "script": {
                 "exec": [
+                  "pm.test('Status 200 OK', function () { pm.response.to.have.status(200); });",
                   "var json = pm.response.json();",
                   "if (json.data && json.data.token) {",
                   "    pm.collectionVariables.set('token', json.data.token);",
@@ -66,9 +70,28 @@
               "raw": "{\n  \"email\": \"raphaelfribeiro@gmail.com\",\n  \"password\": \"Test@123456\"\n}"
             }
           }
-        },
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
         {
           "name": "Get User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Response contains user id', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.data).to.have.property('id');",
+                  "});"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "GET",
             "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
@@ -77,6 +100,16 @@
         },
         {
           "name": "Delete User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "DELETE",
             "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
@@ -95,6 +128,7 @@
               "listen": "test",
               "script": {
                 "exec": [
+                  "pm.test('Status 201 Created', function () { pm.response.to.have.status(201); });",
                   "var json = pm.response.json();",
                   "if (json.data && json.data.id) {",
                   "    pm.collectionVariables.set('productId', json.data.id);",
@@ -118,6 +152,21 @@
         },
         {
           "name": "Get All Products",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Response is paginated', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('currentPage');",
+                  "    pm.expect(json).to.have.property('totalCount');",
+                  "});"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "GET",
             "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
@@ -132,6 +181,21 @@
         },
         {
           "name": "Get Product by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Response contains product id', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.data).to.have.property('id');",
+                  "    pm.expect(json.data.id).to.eql(pm.collectionVariables.get('productId'));",
+                  "});"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "GET",
             "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
@@ -140,6 +204,16 @@
         },
         {
           "name": "Get All Categories",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "GET",
             "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
@@ -148,6 +222,21 @@
         },
         {
           "name": "Get Products by Category",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Response is paginated', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('currentPage');",
+                  "    pm.expect(json).to.have.property('totalCount');",
+                  "});"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "GET",
             "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
@@ -162,6 +251,20 @@
         },
         {
           "name": "Update Product",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Title was updated', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.data.title).to.eql('Fjallraven Backpack - Updated');",
+                  "});"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "PUT",
             "header": [
@@ -177,6 +280,16 @@
         },
         {
           "name": "Delete Product",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "DELETE",
             "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
@@ -192,9 +305,18 @@
           "name": "Create Cart",
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.collectionVariables.set('today', new Date().toISOString());"
+                ]
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "exec": [
+                  "pm.test('Status 201 Created', function () { pm.response.to.have.status(201); });",
                   "var json = pm.response.json();",
                   "if (json.data && json.data.id) {",
                   "    pm.collectionVariables.set('cartId', json.data.id);",
@@ -212,12 +334,27 @@
             "url": "{{baseUrl}}/api/carts",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"userId\": \"{{userId}}\",\n  \"date\": \"2026-05-11T10:00:00Z\",\n  \"products\": [\n    {\n      \"productId\": \"{{productId}}\",\n      \"quantity\": 3\n    }\n  ]\n}"
+              "raw": "{\n  \"userId\": \"{{userId}}\",\n  \"date\": \"{{today}}\",\n  \"products\": [\n    {\n      \"productId\": \"{{productId}}\",\n      \"quantity\": 3\n    }\n  ]\n}"
             }
           }
         },
         {
           "name": "Get All Carts",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Response is paginated', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('currentPage');",
+                  "    pm.expect(json).to.have.property('totalCount');",
+                  "});"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "GET",
             "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
@@ -232,6 +369,21 @@
         },
         {
           "name": "Get Cart by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Response contains cart id', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.data).to.have.property('id');",
+                  "    pm.expect(json.data.id).to.eql(pm.collectionVariables.get('cartId'));",
+                  "});"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "GET",
             "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
@@ -240,6 +392,28 @@
         },
         {
           "name": "Update Cart",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.collectionVariables.set('today', new Date().toISOString());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Quantity was updated', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.data.products[0].quantity).to.eql(5);",
+                  "});"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "PUT",
             "header": [
@@ -249,12 +423,22 @@
             "url": "{{baseUrl}}/api/carts/{{cartId}}",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"userId\": \"{{userId}}\",\n  \"date\": \"2026-05-11T10:10:10Z\",\n  \"products\": [\n    {\n      \"productId\": \"{{productId}}\",\n      \"quantity\": 5\n    }\n  ]\n}"
+              "raw": "{\n  \"userId\": \"{{userId}}\",\n  \"date\": \"{{today}}\",\n  \"products\": [\n    {\n      \"productId\": \"{{productId}}\",\n      \"quantity\": 5\n    }\n  ]\n}"
             }
           }
         },
         {
           "name": "Delete Cart",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "DELETE",
             "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
@@ -270,16 +454,30 @@
           "name": "Create Sale",
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.collectionVariables.set('saleNumber', 'SALE-' + Date.now());"
+                ]
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "exec": [
+                  "pm.test('Status 201 Created', function () { pm.response.to.have.status(201); });",
                   "var json = pm.response.json();",
                   "if (json.data && json.data.id) {",
                   "    pm.collectionVariables.set('saleId', json.data.id);",
                   "    if (json.data.items && json.data.items.length > 0) {",
                   "        pm.collectionVariables.set('saleItemId', json.data.items[0].id);",
                   "    }",
-                  "}"
+                  "}",
+                  "pm.test('10% discount applied for 5 items', function () {",
+                  "    var item = json.data.items[0];",
+                  "    pm.expect(item.discount).to.eql(0.10);",
+                  "    pm.expect(item.totalAmount).to.eql(5 * 109.95 * 0.90);",
+                  "});"
                 ]
               }
             }
@@ -293,12 +491,27 @@
             "url": "{{baseUrl}}/api/sales",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"saleNumber\": \"SALE-001\",\n  \"saleDate\": \"2026-05-11T10:00:00Z\",\n  \"customerId\": \"{{userId}}\",\n  \"customerName\": \"John Doe\",\n  \"branchId\": \"00000000-0000-0000-0000-000000000001\",\n  \"branchName\": \"Main Branch\",\n  \"items\": [\n    {\n      \"productId\": \"{{productId}}\",\n      \"productName\": \"Fjallraven Backpack\",\n      \"quantity\": 5,\n      \"unitPrice\": 109.95\n    }\n  ]\n}"
+              "raw": "{\n  \"saleNumber\": \"{{saleNumber}}\",\n  \"saleDate\": \"{{today}}\",\n  \"customerId\": \"{{userId}}\",\n  \"customerName\": \"John Doe\",\n  \"branchId\": \"00000000-0000-0000-0000-000000000001\",\n  \"branchName\": \"Main Branch\",\n  \"items\": [\n    {\n      \"productId\": \"{{productId}}\",\n      \"productName\": \"Fjallraven Backpack\",\n      \"quantity\": 5,\n      \"unitPrice\": 109.95\n    }\n  ]\n}"
             }
           }
         },
         {
           "name": "Get All Sales",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Response is paginated', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('currentPage');",
+                  "    pm.expect(json).to.have.property('totalCount');",
+                  "});"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "GET",
             "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
@@ -313,6 +526,21 @@
         },
         {
           "name": "Get Sale by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Response contains sale id', function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.data).to.have.property('id');",
+                  "    pm.expect(json.data.id).to.eql(pm.collectionVariables.get('saleId'));",
+                  "});"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "GET",
             "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
@@ -321,6 +549,28 @@
         },
         {
           "name": "Update Sale",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.collectionVariables.set('saleNumber', 'SALE-' + Date.now());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', function () { pm.response.to.have.status(200); });",
+                  "pm.test('20% discount applied for 10 items', function () {",
+                  "    var item = pm.response.json().data.items[0];",
+                  "    pm.expect(item.discount).to.eql(0.20);",
+                  "});"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "PUT",
             "header": [
@@ -330,12 +580,22 @@
             "url": "{{baseUrl}}/api/sales/{{saleId}}",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"saleNumber\": \"SALE-001\",\n  \"saleDate\": \"2026-05-11T10:00:00Z\",\n  \"customerId\": \"{{userId}}\",\n  \"customerName\": \"John Doe Updated\",\n  \"branchId\": \"00000000-0000-0000-0000-000000000001\",\n  \"branchName\": \"Main Branch\",\n  \"items\": [\n    {\n      \"productId\": \"{{productId}}\",\n      \"productName\": \"Fjallraven Backpack\",\n      \"quantity\": 10,\n      \"unitPrice\": 109.95\n    }\n  ]\n}"
+              "raw": "{\n  \"saleNumber\": \"{{saleNumber}}\",\n  \"saleDate\": \"{{today}}\",\n  \"customerId\": \"{{userId}}\",\n  \"customerName\": \"John Doe Updated\",\n  \"branchId\": \"00000000-0000-0000-0000-000000000001\",\n  \"branchName\": \"Main Branch\",\n  \"items\": [\n    {\n      \"productId\": \"{{productId}}\",\n      \"productName\": \"Fjallraven Backpack\",\n      \"quantity\": 10,\n      \"unitPrice\": 109.95\n    }\n  ]\n}"
             }
           }
         },
         {
           "name": "Cancel Sale Item",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "PATCH",
             "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
@@ -344,6 +604,16 @@
         },
         {
           "name": "Delete Sale",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "DELETE",
             "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],

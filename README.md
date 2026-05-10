@@ -412,10 +412,18 @@ O que seria evoluído com mais tempo:
 
 1. Abra o **Postman**
 2. Clique em **Import**
-3. Selecione `docs/DeveloperStore.postman_collection.json`
-4. Execute na ordem: **Create User → Authenticate → Create Product → Create Cart → Create Sale**
+3. Selecione `template/backend/docs/DeveloperStore.postman_collection.json`
+4. Execute na ordem: **Auth → Users → Products → Carts → Sales**
 
-> Os scripts automáticos salvam `token`, `userId`, `productId`, `cartId`, `saleId` e `saleItemId` nas variáveis de coleção.
+| Pasta | Requests | Scripts |
+|---|---|---|
+| Auth | Create User, Authenticate | Salva `userId` e `token` automaticamente |
+| Users | Get User, Delete User | Valida status 200 |
+| Products | Create, Get All, Get by ID, Categories, By Category, Update, Delete | Salva `productId`; valida status e paginação |
+| Carts | Create, Get All, Get by ID, Update, Delete | Data dinâmica via Pre-request; salva `cartId` |
+| Sales | Create, Get All, Get by ID, Update, Cancel Item, Delete | `saleNumber` único por execução via `SALE-{timestamp}`; salva `saleId` e `saleItemId`; valida desconto de 10% no Create |
+
+> Todos os 22 requests têm scripts de teste com asserções de status. Os Pre-request Scripts em Create/Update de Cart e Sale geram data e saleNumber dinamicamente — a collection pode ser executada múltiplas vezes sem conflito.
 
 ---
 
