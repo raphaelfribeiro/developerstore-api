@@ -1,5 +1,6 @@
 using AutoMapper;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Ambev.DeveloperEvaluation.Application.Carts.CreateCart;
 using Ambev.DeveloperEvaluation.Application.Carts.DeleteCart;
@@ -14,6 +15,7 @@ namespace Ambev.DeveloperEvaluation.WebApi.Features.Carts;
 /// Controller for managing shopping cart operations.
 /// Provides full CRUD for carts and their items.
 /// </summary>
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class CartsController : BaseController

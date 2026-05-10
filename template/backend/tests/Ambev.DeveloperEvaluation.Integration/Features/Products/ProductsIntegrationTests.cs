@@ -10,15 +10,25 @@ namespace Ambev.DeveloperEvaluation.Integration.Features.Products;
 /// Integration tests for the Products API endpoints.
 /// Tests run against a real PostgreSQL database via Testcontainers.
 /// </summary>
+[Collection("Integration")]
 public class ProductsIntegrationTests : BaseIntegrationTest
 {
     public ProductsIntegrationTests(IntegrationTestFactory factory) : base(factory) { }
 
+    [Fact(DisplayName = "GET /api/products Without authentication Then returns 401 Unauthorized")]
+    public async Task GetProducts_WithoutAuth_Returns401()
+    {
+        var unauthClient = CreateUnauthenticatedClient();
+
+        var response = await unauthClient.GetAsync("/api/products?page=1&size=10");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
     [Fact(DisplayName = "POST /api/products When valid product Then returns 201 Created")]
     public async Task CreateProduct_ValidRequest_Returns201()
     {
-        // Arrange
-        await AuthenticateClientAsync("products.user@test.com", "ValidPassword@123", "productsuser");
+        await AuthenticateClientAsync($"products.create{Guid.NewGuid():N}@test.com", "ValidPassword@123", $"prodcreate{Guid.NewGuid():N}");
 
         var request = new
         {
@@ -30,63 +40,85 @@ public class ProductsIntegrationTests : BaseIntegrationTest
             rating = new { rate = 4.5m, count = 100 }
         };
 
-        // Act
         var response = await Client.PostAsJsonAsync("/api/products", request);
 
-        // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Created);
         var content = await response.Content.ReadAsStringAsync();
         content.Should().Contain("id");
     }
 
-    [Fact(DisplayName = "GET /api/products When products exist Then returns paginated list")]
-    public async Task GetProducts_ProductsExist_ReturnsPaginatedList()
+    [Fact(DisplayName = "GET /api/products When authenticated Then returns paginated list")]
+    public async Task GetProducts_Authenticated_ReturnsPaginatedList()
     {
-        // Arrange
-        await AuthenticateClientAsync("products.get@test.com", "ValidPassword@123", "productsgetuser");
+        await AuthenticateClientAsync($"products.get{Guid.NewGuid():N}@test.com", "ValidPassword@123", $"prodget{Guid.NewGuid():N}");
 
-        // Act
         var response = await Client.GetAsync("/api/products?page=1&size=10");
 
-        // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var content = await response.Content.ReadAsStringAsync();
         content.Should().Contain("currentPage");
         content.Should().Contain("totalCount");
     }
 
-    [Fact(DisplayName = "GET /api/products/categories When products exist Then returns categories")]
-    public async Task GetCategories_ProductsExist_ReturnsCategories()
+    [Fact(DisplayName = "GET /api/products/categories When authenticated Then returns categories")]
+    public async Task GetCategories_Authenticated_ReturnsCategories()
     {
-        // Arrange
-        await AuthenticateClientAsync("categories.user@test.com", "ValidPassword@123", "categoriesuser");
+        await AuthenticateClientAsync($"categories{Guid.NewGuid():N}@test.com", "ValidPassword@123", $"catuser{Guid.NewGuid():N}");
 
-        // Act
         var response = await Client.GetAsync("/api/products/categories");
 
-        // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
     [Fact(DisplayName = "GET /api/products/{id} When product not found Then returns 404")]
     public async Task GetProduct_NotFound_Returns404()
     {
-        // Arrange
-        await AuthenticateClientAsync("products.notfound@test.com", "ValidPassword@123", "productsnotfound");
-        var nonExistentId = Guid.NewGuid();
+        await AuthenticateClientAsync($"products.notfound{Guid.NewGuid():N}@test.com", "ValidPassword@123", $"prodnotfound{Guid.NewGuid():N}");
 
-        // Act
-        var response = await Client.GetAsync($"/api/products/{nonExistentId}");
+        var response = await Client.GetAsync($"/api/products/{Guid.NewGuid()}");
 
-        // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact(DisplayName = "PUT /api/products/{id} When product exists Then returns 200 with updated data")]
+    public async Task UpdateProduct_ProductExists_Returns200WithUpdatedData()
+    {
+        await AuthenticateClientAsync($"products.update{Guid.NewGuid():N}@test.com", "ValidPassword@123", $"produpdate{Guid.NewGuid():N}");
+
+        var createRequest = new
+        {
+            title = "Original Product",
+            price = 50m,
+            description = "Original description",
+            category = "original-category",
+            image = "https://example.com/original.jpg",
+            rating = new { rate = 3.0m, count = 10 }
+        };
+
+        var createResponse = await Client.PostAsJsonAsync("/api/products", createRequest);
+        var productId = await DeserializeIdAsync(createResponse);
+
+        var updateRequest = new
+        {
+            title = "Updated Product Title",
+            price = 75m,
+            description = "Updated description",
+            category = "updated-category",
+            image = "https://example.com/updated.jpg",
+            rating = new { rate = 4.5m, count = 50 }
+        };
+
+        var response = await Client.PutAsJsonAsync($"/api/products/{productId}", updateRequest);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var content = await response.Content.ReadAsStringAsync();
+        content.Should().Contain("Updated Product Title");
     }
 
     [Fact(DisplayName = "DELETE /api/products/{id} When product exists Then returns 200 OK")]
     public async Task DeleteProduct_ProductExists_Returns200()
     {
-        // Arrange
-        await AuthenticateClientAsync("products.delete@test.com", "ValidPassword@123", "productsdeleteuser");
+        await AuthenticateClientAsync($"products.delete{Guid.NewGuid():N}@test.com", "ValidPassword@123", $"proddelete{Guid.NewGuid():N}");
 
         var createRequest = new
         {
@@ -101,10 +133,8 @@ public class ProductsIntegrationTests : BaseIntegrationTest
         var createResponse = await Client.PostAsJsonAsync("/api/products", createRequest);
         var productId = await DeserializeIdAsync(createResponse);
 
-        // Act
         var response = await Client.DeleteAsync($"/api/products/{productId}");
 
-        // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
