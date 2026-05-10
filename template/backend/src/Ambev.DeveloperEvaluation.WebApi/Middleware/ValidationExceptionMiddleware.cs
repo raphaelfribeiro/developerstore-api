@@ -75,12 +75,12 @@ namespace Ambev.DeveloperEvaluation.WebApi.Middleware
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = StatusCodes.Status400BadRequest;
 
-            var response = new ApiResponse
+            var firstError = exception.Errors.FirstOrDefault()?.ErrorMessage ?? "Validation failed";
+            var response = new ApiErrorResponse
             {
-                Success = false,
-                Message = "Validation Failed",
-                Errors = exception.Errors
-                    .Select(error => (ValidationErrorDetail)error)
+                Type = "ValidationError",
+                Error = "Invalid input data",
+                Detail = firstError
             };
 
             return WriteResponseAsync(context, response);
@@ -91,17 +91,26 @@ namespace Ambev.DeveloperEvaluation.WebApi.Middleware
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = statusCode;
 
-            var response = new ApiResponse
+            var (type, error) = statusCode switch
             {
-                Success = false,
-                Message = message,
-                Errors = Enumerable.Empty<ValidationErrorDetail>()
+                StatusCodes.Status404NotFound    => ("ResourceNotFound", "Resource not found"),
+                StatusCodes.Status401Unauthorized => ("AuthenticationError", "Unauthorized"),
+                StatusCodes.Status409Conflict    => ("Conflict", "Conflict"),
+                StatusCodes.Status400BadRequest  => ("InvalidRequest", "Invalid request"),
+                _                                => ("InternalError", "An unexpected error occurred")
+            };
+
+            var response = new ApiErrorResponse
+            {
+                Type = type,
+                Error = error,
+                Detail = message
             };
 
             return WriteResponseAsync(context, response);
         }
 
-        private static Task WriteResponseAsync(HttpContext context, ApiResponse response)
+        private static Task WriteResponseAsync(HttpContext context, ApiErrorResponse response)
         {
             var jsonOptions = new JsonSerializerOptions
             {

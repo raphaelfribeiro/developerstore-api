@@ -21,7 +21,7 @@ public class CartsIntegrationTests : BaseIntegrationTest
     {
         var unauthClient = CreateUnauthenticatedClient();
 
-        var response = await unauthClient.GetAsync("/api/carts?page=1&size=10");
+        var response = await unauthClient.GetAsync("/api/carts?_page=1&_size=10");
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -91,12 +91,12 @@ public class CartsIntegrationTests : BaseIntegrationTest
     {
         await AuthenticateClientAsync($"carts.list{Guid.NewGuid():N}@test.com", "ValidPassword@123", $"cartlist{Guid.NewGuid():N}");
 
-        var response = await Client.GetAsync("/api/carts?page=1&size=10");
+        var response = await Client.GetAsync("/api/carts?_page=1&_size=10");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var content = await response.Content.ReadAsStringAsync();
         content.Should().Contain("currentPage");
-        content.Should().Contain("totalCount");
+        content.Should().Contain("totalItems");
     }
 
     [Fact(DisplayName = "PUT /api/carts/{id} When cart exists Then returns 200 with updated items")]

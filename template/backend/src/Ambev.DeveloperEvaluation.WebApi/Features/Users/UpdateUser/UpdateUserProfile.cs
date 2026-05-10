@@ -1,14 +1,14 @@
 using AutoMapper;
-using Ambev.DeveloperEvaluation.Application.Users.CreateUser;
+using Ambev.DeveloperEvaluation.Application.Users.UpdateUser;
 using Ambev.DeveloperEvaluation.WebApi.Features.Users.Shared;
 
-namespace Ambev.DeveloperEvaluation.WebApi.Features.Users.CreateUser;
+namespace Ambev.DeveloperEvaluation.WebApi.Features.Users.UpdateUser;
 
-public class CreateUserProfile : Profile
+public class UpdateUserProfile : Profile
 {
-    public CreateUserProfile()
+    public UpdateUserProfile()
     {
-        CreateMap<CreateUserRequest, CreateUserCommand>()
+        CreateMap<UpdateUserRequest, UpdateUserCommand>()
             .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.Name.Firstname))
             .ForMember(dest => dest.LastName,  opt => opt.MapFrom(src => src.Name.Lastname))
             .ForMember(dest => dest.City,      opt => opt.MapFrom(src => src.Address.City))
@@ -18,7 +18,7 @@ public class CreateUserProfile : Profile
             .ForMember(dest => dest.GeoLat,    opt => opt.MapFrom(src => src.Address.Geolocation.Lat))
             .ForMember(dest => dest.GeoLong,   opt => opt.MapFrom(src => src.Address.Geolocation.Long));
 
-        CreateMap<CreateUserResult, CreateUserResponse>()
+        CreateMap<UpdateUserResult, UpdateUserResponse>()
             .ForMember(dest => dest.Status,  opt => opt.MapFrom(src => src.Status.ToString()))
             .ForMember(dest => dest.Role,    opt => opt.MapFrom(src => src.Role.ToString()))
             .ForMember(dest => dest.Password, opt => opt.Ignore())

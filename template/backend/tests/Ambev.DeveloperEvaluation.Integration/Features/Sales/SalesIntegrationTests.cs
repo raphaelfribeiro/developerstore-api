@@ -21,7 +21,7 @@ public class SalesIntegrationTests : BaseIntegrationTest
     {
         var unauthClient = CreateUnauthenticatedClient();
 
-        var response = await unauthClient.GetAsync("/api/sales?page=1&size=10");
+        var response = await unauthClient.GetAsync("/api/sales?_page=1&_size=10");
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -133,12 +133,12 @@ public class SalesIntegrationTests : BaseIntegrationTest
     {
         await AuthenticateClientAsync($"sales.get{Guid.NewGuid():N}@test.com", "ValidPassword@123", $"salesget{Guid.NewGuid():N}");
 
-        var response = await Client.GetAsync("/api/sales?page=1&size=10");
+        var response = await Client.GetAsync("/api/sales?_page=1&_size=10");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var content = await response.Content.ReadAsStringAsync();
         content.Should().Contain("currentPage");
-        content.Should().Contain("totalCount");
+        content.Should().Contain("totalItems");
     }
 
     [Fact(DisplayName = "GET /api/sales/{id} When sale not found Then returns 404")]

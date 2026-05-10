@@ -11,12 +11,9 @@ public sealed class AuthenticateUserWebApiProfile : Profile
 {
     public AuthenticateUserWebApiProfile()
     {
-        CreateMap<AuthenticateUserRequest, AuthenticateUserCommand>();
+        CreateMap<AuthenticateUserRequest, AuthenticateUserCommand>()
+            .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.Username));
 
         CreateMap<AuthenticateUserResult, AuthenticateUserResponse>();
-
-        CreateMap<User, AuthenticateUserResponse>()
-            .ForMember(dest => dest.Token, opt => opt.Ignore())
-            .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role.ToString()));
     }
 }

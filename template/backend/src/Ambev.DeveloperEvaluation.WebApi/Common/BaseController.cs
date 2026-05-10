@@ -14,10 +14,10 @@ public class BaseController : ControllerBase
         base.Ok(new ApiResponseWithData<T> { Data = data, Success = true, Message = message });
 
     protected IActionResult BadRequest(string message) =>
-        base.BadRequest(new ApiResponse { Message = message, Success = false });
+        base.BadRequest(new ApiErrorResponse { Type = "ValidationError", Error = "Invalid request", Detail = message });
 
     protected IActionResult NotFound(string message = "Resource not found") =>
-        base.NotFound(new ApiResponse { Message = message, Success = false });
+        base.NotFound(new ApiErrorResponse { Type = "ResourceNotFound", Error = "Resource not found", Detail = message });
 
     protected IActionResult OkPaginated<T>(PaginatedResult<T> result) =>
         base.Ok(new PaginatedResponse<T>
@@ -25,7 +25,7 @@ public class BaseController : ControllerBase
             Data = result.Data,
             CurrentPage = result.CurrentPage,
             TotalPages = result.TotalPages,
-            TotalCount = result.TotalCount,
+            TotalItems = result.TotalCount,
             Success = true
         });
 }

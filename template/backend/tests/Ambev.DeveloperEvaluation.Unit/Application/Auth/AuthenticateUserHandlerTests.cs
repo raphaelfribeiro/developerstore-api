@@ -32,8 +32,8 @@ public class AuthenticateUserHandlerTests
     {
         var user = UserTestData.GenerateValidUser();
         user.Status = UserStatus.Active;
-        var command = new AuthenticateUserCommand { Email = user.Email, Password = "ValidPassword@123" };
-        _userRepository.GetByEmailAsync(command.Email, Arg.Any<CancellationToken>()).Returns(user);
+        var command = new AuthenticateUserCommand { Username = user.Username, Password = "ValidPassword@123" };
+        _userRepository.GetByUsernameAsync(command.Username, Arg.Any<CancellationToken>()).Returns(user);
         _passwordHasher.VerifyPassword(command.Password, user.Password).Returns(true);
         _jwtTokenGenerator.GenerateToken(user).Returns("jwt-token");
 
@@ -43,11 +43,11 @@ public class AuthenticateUserHandlerTests
         result.Token.Should().Be("jwt-token");
     }
 
-    [Fact(DisplayName = "Given non-existent email When authenticating Then throws UnauthorizedAccessException")]
-    public async Task Handle_NonExistentEmail_ThrowsUnauthorizedAccessException()
+    [Fact(DisplayName = "Given non-existent username When authenticating Then throws UnauthorizedAccessException")]
+    public async Task Handle_NonExistentUsername_ThrowsUnauthorizedAccessException()
     {
-        var command = new AuthenticateUserCommand { Email = "nonexistent@email.com", Password = "ValidPassword@123" };
-        _userRepository.GetByEmailAsync(command.Email, Arg.Any<CancellationToken>()).Returns((User?)null);
+        var command = new AuthenticateUserCommand { Username = "nonexistentuser", Password = "ValidPassword@123" };
+        _userRepository.GetByUsernameAsync(command.Username, Arg.Any<CancellationToken>()).Returns((User?)null);
         var act = () => _handler.Handle(command, CancellationToken.None);
         await act.Should().ThrowAsync<UnauthorizedAccessException>();
     }
@@ -56,8 +56,8 @@ public class AuthenticateUserHandlerTests
     public async Task Handle_WrongPassword_ThrowsUnauthorizedAccessException()
     {
         var user = UserTestData.GenerateValidUser();
-        var command = new AuthenticateUserCommand { Email = user.Email, Password = "WrongPassword" };
-        _userRepository.GetByEmailAsync(command.Email, Arg.Any<CancellationToken>()).Returns(user);
+        var command = new AuthenticateUserCommand { Username = user.Username, Password = "WrongPassword" };
+        _userRepository.GetByUsernameAsync(command.Username, Arg.Any<CancellationToken>()).Returns(user);
         _passwordHasher.VerifyPassword(command.Password, user.Password).Returns(false);
         var act = () => _handler.Handle(command, CancellationToken.None);
         await act.Should().ThrowAsync<UnauthorizedAccessException>();
@@ -68,8 +68,8 @@ public class AuthenticateUserHandlerTests
     {
         var user = UserTestData.GenerateValidUser();
         user.Status = UserStatus.Suspended;
-        var command = new AuthenticateUserCommand { Email = user.Email, Password = "ValidPassword@123" };
-        _userRepository.GetByEmailAsync(command.Email, Arg.Any<CancellationToken>()).Returns(user);
+        var command = new AuthenticateUserCommand { Username = user.Username, Password = "ValidPassword@123" };
+        _userRepository.GetByUsernameAsync(command.Username, Arg.Any<CancellationToken>()).Returns(user);
         _passwordHasher.VerifyPassword(command.Password, user.Password).Returns(true);
         var act = () => _handler.Handle(command, CancellationToken.None);
         await act.Should().ThrowAsync<UnauthorizedAccessException>();
@@ -91,24 +91,24 @@ public class AuthenticateUserValidatorTests
     [Fact(DisplayName = "Given valid credentials When validating Then returns valid")]
     public void Given_ValidCredentials_When_Validating_Then_ReturnsValid()
     {
-        var command = new AuthenticateUserCommand { Email = "test@example.com", Password = "ValidPassword@123" };
+        var command = new AuthenticateUserCommand { Username = "validuser", Password = "ValidPassword@123" };
         var result = _validator.Validate(command);
         result.IsValid.Should().BeTrue();
     }
 
-    [Fact(DisplayName = "Given empty email When validating Then returns invalid")]
-    public void Given_EmptyEmail_When_Validating_Then_ReturnsInvalid()
+    [Fact(DisplayName = "Given empty username When validating Then returns invalid")]
+    public void Given_EmptyUsername_When_Validating_Then_ReturnsInvalid()
     {
-        var command = new AuthenticateUserCommand { Email = "", Password = "ValidPassword@123" };
+        var command = new AuthenticateUserCommand { Username = "", Password = "ValidPassword@123" };
         var result = _validator.Validate(command);
         result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.PropertyName == "Email");
+        result.Errors.Should().Contain(e => e.PropertyName == "Username");
     }
 
     [Fact(DisplayName = "Given empty password When validating Then returns invalid")]
     public void Given_EmptyPassword_When_Validating_Then_ReturnsInvalid()
     {
-        var command = new AuthenticateUserCommand { Email = "test@example.com", Password = "" };
+        var command = new AuthenticateUserCommand { Username = "validuser", Password = "" };
         var result = _validator.Validate(command);
         result.IsValid.Should().BeFalse();
         result.Errors.Should().Contain(e => e.PropertyName == "Password");

@@ -62,16 +62,17 @@ public class AuthIntegrationTests : BaseIntegrationTest
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    [Fact(DisplayName = "POST /api/auth When valid credentials Then returns token")]
+    [Fact(DisplayName = "POST /api/auth/login When valid credentials Then returns token")]
     public async Task Authenticate_ValidCredentials_ReturnsToken()
     {
         // Arrange
         var email = $"auth{Guid.NewGuid():N}@test.com";
         var password = "ValidPassword@123";
+        var username = "authuser";
 
         var createRequest = new
         {
-            username = "authuser",
+            username,
             email,
             password,
             phone = "+5547999999999",
@@ -80,10 +81,10 @@ public class AuthIntegrationTests : BaseIntegrationTest
         };
         await Client.PostAsJsonAsync("/api/users", createRequest);
 
-        var loginRequest = new { email, password };
+        var loginRequest = new { username, password };
 
         // Act
-        var response = await Client.PostAsJsonAsync("/api/auth", loginRequest);
+        var response = await Client.PostAsJsonAsync("/api/auth/login", loginRequest);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -91,16 +92,16 @@ public class AuthIntegrationTests : BaseIntegrationTest
         content.Should().Contain("token");
     }
 
-    [Fact(DisplayName = "POST /api/auth When invalid credentials Then returns 401 Unauthorized")]
+    [Fact(DisplayName = "POST /api/auth/login When invalid credentials Then returns 401 Unauthorized")]
     public async Task Authenticate_InvalidCredentials_Returns401()
     {
         var loginRequest = new
         {
-            email = "nonexistent@test.com",
+            username = "nonexistentuser",
             password = "WrongPassword"
         };
 
-        var response = await Client.PostAsJsonAsync("/api/auth", loginRequest);
+        var response = await Client.PostAsJsonAsync("/api/auth/login", loginRequest);
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }

@@ -1,23 +1,17 @@
-﻿using Ambev.DeveloperEvaluation.Domain.Enums;
+using Ambev.DeveloperEvaluation.Domain.Enums;
+using MediatR;
 
-namespace Ambev.DeveloperEvaluation.Application.Users.CreateUser;
+namespace Ambev.DeveloperEvaluation.Application.Users.UpdateUser;
 
-/// <summary>
-/// Represents the response returned after successfully creating a new user.
-/// </summary>
-/// <remarks>
-/// This response contains the unique identifier of the newly created user,
-/// which can be used for subsequent operations or reference. It also includes
-/// the username, email, phone number, role, and status of the user for confirmation purposes.
-/// </remarks>
-public class CreateUserResult
+public class UpdateUserCommand : IRequest<UpdateUserResult>
 {
     public Guid Id { get; set; }
     public string Username { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
+    public string Password { get; set; } = string.Empty;
     public string Phone { get; set; } = string.Empty;
-    public UserRole Role { get; set; }
     public UserStatus Status { get; set; }
+    public UserRole Role { get; set; }
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
     public string City { get; set; } = string.Empty;

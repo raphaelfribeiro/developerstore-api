@@ -1,17 +1,14 @@
 using AutoMapper;
-using Ambev.DeveloperEvaluation.Application.Users.GetUser;
+using Ambev.DeveloperEvaluation.Application.Users.GetUsers;
 using Ambev.DeveloperEvaluation.WebApi.Features.Users.Shared;
 
-namespace Ambev.DeveloperEvaluation.WebApi.Features.Users.GetUser;
+namespace Ambev.DeveloperEvaluation.WebApi.Features.Users.GetUsers;
 
-public class GetUserProfile : Profile
+public class GetUsersProfile : Profile
 {
-    public GetUserProfile()
+    public GetUsersProfile()
     {
-        CreateMap<Guid, GetUserCommand>()
-            .ConstructUsing(id => new GetUserCommand(id));
-
-        CreateMap<GetUserResult, GetUserResponse>()
+        CreateMap<GetUsersResult, GetUsersResponse>()
             .ForMember(dest => dest.Status,  opt => opt.MapFrom(src => src.Status.ToString()))
             .ForMember(dest => dest.Role,    opt => opt.MapFrom(src => src.Role.ToString()))
             .ForMember(dest => dest.Password, opt => opt.Ignore())

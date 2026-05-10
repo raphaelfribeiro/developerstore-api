@@ -26,10 +26,50 @@ public class User : BaseEntity, IUser
     public string Email { get; set; } = string.Empty;
 
     /// <summary>
+    /// Gets the user's first name.
+    /// </summary>
+    public string FirstName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets the user's last name.
+    /// </summary>
+    public string LastName { get; set; } = string.Empty;
+
+    /// <summary>
     /// Gets the user's phone number.
     /// Must be a valid phone number format following the pattern (XX) XXXXX-XXXX.
     /// </summary>
-    public string Phone { get; set; } = string.Empty ;
+    public string Phone { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets the city of the user's address.
+    /// </summary>
+    public string City { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets the street of the user's address.
+    /// </summary>
+    public string Street { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets the street number of the user's address.
+    /// </summary>
+    public int Number { get; set; }
+
+    /// <summary>
+    /// Gets the zip code of the user's address.
+    /// </summary>
+    public string ZipCode { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets the geolocation latitude.
+    /// </summary>
+    public string GeoLat { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets the geolocation longitude.
+    /// </summary>
+    public string GeoLong { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets the hashed password for authentication.
