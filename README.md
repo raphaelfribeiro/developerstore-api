@@ -155,7 +155,7 @@ tests/
 ### 1. Clone o repositório
 
 ```bash
-git clone <url-do-repositorio>
+git clone https://github.com/raphaelfernandesribeiro/desafio-tecnico.git
 cd desafio-tecnico/template/backend
 ```
 
@@ -167,10 +167,11 @@ docker-compose up --build -d
 
 | Serviço | URL |
 |---|---|
-| **API** | http://localhost:8080 |
-| **Swagger UI** | http://localhost:8080 |
+| **API / Swagger UI** | http://localhost:8080 (Swagger na raiz `/`) |
 | **Health Check** | http://localhost:8080/health |
 | **PostgreSQL** | localhost:5432 |
+| **MongoDB** | localhost:27017 |
+| **Redis** | localhost:6379 |
 
 ### 3. Verifique os logs
 
@@ -183,6 +184,21 @@ docker logs ambev_developer_evaluation_webapi -f
 ```bash
 docker-compose down
 ```
+
+### Variáveis de ambiente
+
+Todas as variáveis já estão configuradas no `docker-compose.override.yml`. Para sobrescrever, exporte antes de subir os containers:
+
+| Variável | Padrão | Descrição |
+|---|---|---|
+| `ConnectionStrings__DefaultConnection` | `Host=ambev.developerevaluation.database;Port=5432;Database=developer_evaluation;Username=developer;Password=ev@luAt10n` | Connection string do PostgreSQL |
+| `Jwt__SecretKey` | `YourSuperSecretKey...` | Chave de assinatura do JWT (mín. 32 chars) |
+| `Jwt__Issuer` | `AmbevDeveloperEvaluation` | Issuer do token JWT |
+| `Jwt__ExpiryMinutes` | `60` | Validade do token em minutos |
+| `ASPNETCORE_ENVIRONMENT` | `Production` | Ambiente da aplicação |
+| `ASPNETCORE_HTTP_PORTS` | `8080` | Porta HTTP do Kestrel |
+
+> Para rodar sem Docker, copie `appsettings.json`, ajuste `DefaultConnection` para `Host=localhost` e execute `dotnet run` na pasta `src/Ambev.DeveloperEvaluation.WebApi`.
 
 ---
 
@@ -333,6 +349,21 @@ template/backend/
     └── Ambev.DeveloperEvaluation.Integration/
         └── Features/          # Auth, Products, Sales integration tests
 ```
+
+---
+
+## Pendências e Próximos Passos
+
+O que seria evoluído com mais tempo:
+
+| Item | Descrição |
+|---|---|
+| **Message Broker real** | Substituir o `LoggingEventPublisher` por integração com RabbitMQ ou Azure Service Bus via Rebus, mantendo o Polly retry já implementado |
+| **Testes unitários de Cart** | Handlers e validators do domínio Cart cobertos da mesma forma que Sale e Product |
+| **Testes funcionais** | Suite de testes end-to-end simulando fluxos completos (criar usuário → autenticar → criar produto → criar venda) |
+| **API versioning** | Versionamento de rotas (`/api/v1/`) para suportar evolução sem quebrar clientes |
+| **Rate limiting** | Throttling por IP/usuário nos endpoints públicos (auth, criação de usuário) |
+| **CI/CD pipeline** | GitHub Actions com build, testes, relatório de cobertura e push de imagem Docker |
 
 ---
 
