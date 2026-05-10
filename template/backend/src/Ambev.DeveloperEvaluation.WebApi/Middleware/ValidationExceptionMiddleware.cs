@@ -36,6 +36,10 @@ namespace Ambev.DeveloperEvaluation.WebApi.Middleware
             {
                 await HandleExceptionAsync(context, ex.Message, StatusCodes.Status404NotFound);
             }
+            catch (Ambev.DeveloperEvaluation.Domain.Exceptions.ForbiddenException ex)
+            {
+                await HandleExceptionAsync(context, ex.Message, StatusCodes.Status403Forbidden);
+            }
             catch (ArgumentException ex)
             {
                 await HandleExceptionAsync(context, ex.Message, StatusCodes.Status400BadRequest);

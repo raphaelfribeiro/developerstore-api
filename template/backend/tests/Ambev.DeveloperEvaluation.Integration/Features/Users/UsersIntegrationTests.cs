@@ -113,6 +113,54 @@ public class UsersIntegrationTests : BaseIntegrationTest
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
+    [Fact(DisplayName = "PUT /api/users/{id} When non-admin tries to change role Then returns 403 Forbidden")]
+    public async Task UpdateUser_NonAdmin_TriesToChangeRole_Returns403()
+    {
+        var suffix = Guid.NewGuid().ToString("N")[..8];
+        var (userId, token) = await CreateAndAuthenticateAsync(
+            $"roletest{suffix}", $"roletest{suffix}@test.com", role: 1);
+
+        SetAuthToken(token);
+
+        var updateRequest = new
+        {
+            username = $"roletest{suffix}",
+            email = $"roletest{suffix}@test.com",
+            role = 3
+        };
+
+        var response = await Client.PutAsJsonAsync($"/api/users/{userId}", updateRequest);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact(DisplayName = "PUT /api/users/{id} When admin updates role Then returns 200 OK")]
+    public async Task UpdateUser_Admin_ChangesRole_Returns200()
+    {
+        var suffix = Guid.NewGuid().ToString("N")[..8];
+        var adminSuffix = Guid.NewGuid().ToString("N")[..8];
+
+        var (targetId, _) = await CreateAndAuthenticateAsync(
+            $"tgt{suffix}", $"tgt{suffix}@test.com", role: 1);
+
+        var (_, adminToken) = await CreateAndAuthenticateAsync(
+            $"adm{adminSuffix}", $"adm{adminSuffix}@test.com", role: 3);
+
+        SetAuthToken(adminToken);
+
+        var updateRequest = new
+        {
+            username = $"tgt{suffix}",
+            email = $"tgt{suffix}@test.com",
+            role = 2,
+            status = 1
+        };
+
+        var response = await Client.PutAsJsonAsync($"/api/users/{targetId}", updateRequest);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
     // ── PATCH /api/users/{id}/role ───────────────────────────────────────────
 
     [Fact(DisplayName = "PATCH /api/users/{id}/role When admin Then returns 200 OK")]

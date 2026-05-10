@@ -123,6 +123,7 @@ public class UsersController : BaseController
 
         var command = _mapper.Map<UpdateUserCommand>(request);
         command.Id = id;
+        command.CallerIsAdmin = isAdmin;
 
         var result = await _mediator.Send(command, cancellationToken);
 

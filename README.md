@@ -54,7 +54,7 @@ O **DeveloperStore API** é uma API RESTful completa para gestão de um sistema 
 - **Eventos de domínio** publicados a cada operação relevante
 - **Autenticação JWT** em todos os endpoints protegidos
 - **Paginação e filtros** em todos os endpoints de listagem
-- **~91% de cobertura** nos testes unitários (204 testes)
+- **~91% de cobertura** nos testes unitários (208 testes)
 
 ---
 
@@ -105,7 +105,7 @@ src/
 └── Ambev.DeveloperEvaluation.Common        # Utilitários compartilhados
 
 tests/
-├── Ambev.DeveloperEvaluation.Unit          # Testes unitários (~91% cobertura, 204 testes)
+├── Ambev.DeveloperEvaluation.Unit          # Testes unitários (~91% cobertura, 208 testes)
 ├── Ambev.DeveloperEvaluation.Integration   # Testes de integração com Testcontainers
 └── Ambev.DeveloperEvaluation.Functional    # Testes funcionais
 ```
@@ -303,7 +303,7 @@ dotnet test Ambev.DeveloperEvaluation.sln --filter "FullyQualifiedName~Unit"
 <div align="center">
 
 ![Coverage](https://img.shields.io/badge/Line_Coverage-91%25-brightgreen?style=for-the-badge)
-![Tests](https://img.shields.io/badge/Tests-204_passing-brightgreen?style=for-the-badge)
+![Tests](https://img.shields.io/badge/Tests-208_passing-brightgreen?style=for-the-badge)
 ![Failures](https://img.shields.io/badge/Failures-0-brightgreen?style=for-the-badge)
 
 </div>
@@ -331,7 +331,7 @@ dotnet test Ambev.DeveloperEvaluation.sln --filter "FullyQualifiedName~Integrati
 
 <div align="center">
 
-![Tests](https://img.shields.io/badge/Integration_Tests-38_passing-brightgreen?style=for-the-badge)
+![Tests](https://img.shields.io/badge/Integration_Tests-40_passing-brightgreen?style=for-the-badge)
 ![Failures](https://img.shields.io/badge/Failures-0-brightgreen?style=for-the-badge)
 
 </div>
@@ -339,7 +339,7 @@ dotnet test Ambev.DeveloperEvaluation.sln --filter "FullyQualifiedName~Integrati
 | Suite | Testes | Cobertura |
 |---|---|---|
 | Auth / Users | 7 | Registro, autenticação, JWT, 401 |
-| Users (ownership + admin role) | 6 | PUT ownership check (200/403/401), PATCH role (200/403/401/404) |
+| Users (ownership + admin role) | 8 | PUT ownership check (200/403/401), PUT role change (owner→403, admin→200), PATCH role (200/403/401/404) |
 | Products | 7 | CRUD completo, listagem paginada, 401 |
 | Sales | 8 | CRUD, regras de desconto (10%/20%), cancelamento de item, 401 |
 | Carts | 7 | CRUD completo, listagem paginada, 401 |
@@ -402,7 +402,7 @@ template/backend/
     │   └── Infrastructure/    # LoggingEventPublisher tests
     ├── Ambev.DeveloperEvaluation.Integration/
     │   ├── Fixtures/          # IntegrationTestFactory (Testcontainers), BaseIntegrationTest
-    │   └── Features/          # Auth, Users, Products, Sales, Carts, E2E — 38 testes
+    │   └── Features/          # Auth, Users, Products, Sales, Carts, E2E — 40 testes
     └── Ambev.DeveloperEvaluation.Functional/
         ├── Fixtures/          # FunctionalTestFactory (container isolado), BaseFunctionalTest
         └── Scenarios/         # SalesBusinessRulesTests — 3 cenários de negócio
@@ -462,7 +462,8 @@ O que seria evoluído com mais tempo:
 | **JWT expiry lido do config** | `JwtTokenGenerator` lê `Jwt:ExpiryMinutes` (padrão 60 min) — sem valor hardcoded; alterável por variável de ambiente sem rebuild |
 | **JWT secret com mínimo 32 bytes** | `AddJwtAuthentication` valida comprimento mínimo da chave (requisito HS256 / RFC 7518) na inicialização da aplicação |
 | **Ownership check em `PUT /api/users/{id}`** | OWASP A01:2021 — qualquer usuário autenticado poderia atualizar o perfil de outro. O controller extrai o GUID do `ClaimTypes.NameIdentifier` e retorna 403 se não for o dono nem Admin |
-| **`PATCH /api/users/{id}/role` — admin only** | Separar a escalada de role num endpoint dedicado com `[Authorize(Roles = "Admin")]` elimina o vetor de privilege escalation via `PUT /api/users/{id}` sem remover a funcionalidade de gestão de roles para administradores |
+| **`role` e `status` no body de `PUT /api/users/{id}` com guard no handler** | Spec exige esses campos no request body. O handler verifica: se o caller não for Admin e o valor enviado diferir do atual, lança `ForbiddenException` (403). Não-admins podem omitir ou repetir o valor atual sem restrição. Admins podem alterar livremente. Spec compliance ✅ + segurança ✅ |
+| **`PATCH /api/users/{id}/role` — admin only** | Endpoint dedicado com `[Authorize(Roles = "Admin")]` para administradores gerenciarem role e status de qualquer usuário sem precisar do endpoint de perfil |
 
 ---
 

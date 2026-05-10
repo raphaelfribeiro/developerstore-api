@@ -1,4 +1,5 @@
 using Ambev.DeveloperEvaluation.Common.Security;
+using Ambev.DeveloperEvaluation.Domain.Exceptions;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
 using AutoMapper;
 using MediatR;
@@ -24,6 +25,14 @@ public class UpdateUserHandler : IRequestHandler<UpdateUserCommand, UpdateUserRe
         if (user == null)
             throw new KeyNotFoundException($"User with ID {request.Id} not found");
 
+        if (!request.CallerIsAdmin)
+        {
+            if (request.Role.HasValue && request.Role.Value != user.Role)
+                throw new ForbiddenException("Only admins can change the user role");
+            if (request.Status.HasValue && request.Status.Value != user.Status)
+                throw new ForbiddenException("Only admins can change the user status");
+        }
+
         user.Username = request.Username;
         user.Email = request.Email;
         user.Phone = request.Phone;
@@ -36,6 +45,11 @@ public class UpdateUserHandler : IRequestHandler<UpdateUserCommand, UpdateUserRe
         user.GeoLat = request.GeoLat;
         user.GeoLong = request.GeoLong;
         user.UpdatedAt = DateTime.UtcNow;
+
+        if (request.Role.HasValue)
+            user.Role = request.Role.Value;
+        if (request.Status.HasValue)
+            user.Status = request.Status.Value;
 
         if (!string.IsNullOrWhiteSpace(request.Password))
             user.Password = _passwordHasher.HashPassword(request.Password);
