@@ -1,10 +1,12 @@
 using Ambev.DeveloperEvaluation.Application;
 using Ambev.DeveloperEvaluation.Common.HealthChecks;
 using Ambev.DeveloperEvaluation.Common.Logging;
+using Ambev.DeveloperEvaluation.Common.Security;
 using Ambev.DeveloperEvaluation.Common.Validation;
 using Ambev.DeveloperEvaluation.IoC;
 using Ambev.DeveloperEvaluation.ORM;
 using Ambev.DeveloperEvaluation.WebApi.Middleware;
+using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
@@ -13,7 +15,7 @@ using System.Reflection;
 
 namespace Ambev.DeveloperEvaluation.WebApi;
 
-public class Program
+public partial class Program
 {
     public static void Main(string[] args)
     {
@@ -85,6 +87,9 @@ public class Program
             );
 
             builder.RegisterDependencies();
+
+            // Add JWT Authentication
+            builder.Services.AddJwtAuthentication(builder.Configuration);
 
             // AutoMapper configuration can be added here if needed, but for now, we are just scanning the assemblies for profiles.
             builder.Services.AddAutoMapper(config => { }, typeof(Program).Assembly, typeof(ApplicationLayer).Assembly);

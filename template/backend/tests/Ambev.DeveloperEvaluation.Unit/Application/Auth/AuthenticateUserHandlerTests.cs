@@ -122,7 +122,7 @@ public class AuthProfileTests
     {
         var config = new MapperConfiguration(cfg =>
         {
-            cfg.AddProfile<AuthenticateUserProfile>();
+            cfg.AddProfile<AuthenticateUserApplicationProfile>();
         }, NullLoggerFactory.Instance);
         var mapper = config.CreateMapper();
         var user = UserTestData.GenerateValidUser();

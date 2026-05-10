@@ -1,77 +1,374 @@
-# Developer Evaluation Project
+# DeveloperStore API
 
-`READ CAREFULLY`
+<div align="center">
 
-## Use Case
-**You are a developer on the DeveloperStore team. Now we need to implement the API prototypes.**
+![.NET](https://img.shields.io/badge/.NET-8.0-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)
+![C#](https://img.shields.io/badge/C%23-12.0-239120?style=for-the-badge&logo=csharp&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-13-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 
-As we work with `DDD`, to reference entities from other domains, we use the `External Identities` pattern with denormalization of entity descriptions.
+![Entity Framework](https://img.shields.io/badge/Entity_Framework-Core_8-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)
+![MediatR](https://img.shields.io/badge/MediatR-12.4-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)
+![AutoMapper](https://img.shields.io/badge/AutoMapper-15.1.3-BE3C28?style=for-the-badge&logo=dotnet&logoColor=white)
+![FluentValidation](https://img.shields.io/badge/FluentValidation-11.x-00B4AB?style=for-the-badge&logo=dotnet&logoColor=white)
 
-Therefore, you will write an API (complete CRUD) that handles sales records. The API needs to be able to inform:
+![xUnit](https://img.shields.io/badge/xUnit-2.9-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)
+![Coverage](https://img.shields.io/badge/Coverage-92%25-brightgreen?style=for-the-badge&logo=dotnet&logoColor=white)
+![Swagger](https://img.shields.io/badge/Swagger-OpenAPI_3.0-85EA2D?style=for-the-badge&logo=swagger&logoColor=black)
+![Serilog](https://img.shields.io/badge/Serilog-8.x-EF5B25?style=for-the-badge&logo=dotnet&logoColor=white)
 
-* Sale number
-* Date when the sale was made
-* Customer
-* Total sale amount
-* Branch where the sale was made
-* Products
-* Quantities
-* Unit prices
-* Discounts
-* Total amount for each item
-* Cancelled/Not Cancelled
+</div>
 
-It's not mandatory, but it would be a differential to build code for publishing events of:
-* SaleCreated
-* SaleModified
-* SaleCancelled
-* ItemCancelled
+---
 
-If you write the code, **it's not required** to actually publish to any Message Broker. You can log a message in the application log or however you find most convenient.
+<div align="center">
 
-### Business Rules
+> **Desafio Técnico — Developer Evaluation**
+>
+> API RESTful para gestão de vendas, carrinhos e produtos com arquitetura DDD e CQRS.
 
-* Purchases above 4 identical items have a 10% discount
-* Purchases between 10 and 20 identical items have a 20% discount
-* It's not possible to sell above 20 identical items
-* Purchases below 4 items cannot have a discount
+</div>
 
-These business rules define quantity-based discounting tiers and limitations:
+---
 
-1. Discount Tiers:
-   - 4+ items: 10% discount
-   - 10-20 items: 20% discount
+## Índice
 
-2. Restrictions:
-   - Maximum limit: 20 items per product
-   - No discounts allowed for quantities below 4 items
+- [Visão Geral](#visão-geral)
+- [Tecnologias](#tecnologias)
+- [Arquitetura](#arquitetura)
+- [Regras de Negócio](#regras-de-negócio)
+- [Como Executar](#como-executar)
+- [Endpoints](#endpoints)
+- [Testes](#testes)
+- [Estrutura do Projeto](#estrutura-do-projeto)
+- [Decisões Técnicas](#decisões-técnicas)
 
-## Overview
-This section provides a high-level overview of the project and the various skills and competencies it aims to assess for developer candidates. 
+---
 
-See [Overview](/.doc/overview.md)
+## Visão Geral
 
-## Tech Stack
-This section lists the key technologies used in the project, including the backend, testing, frontend, and database components. 
+O **DeveloperStore API** é uma API RESTful completa para gestão de um sistema de vendas, implementando:
 
-See [Tech Stack](/.doc/tech-stack.md)
+- **CRUD completo** de Vendas, Carrinhos e Produtos
+- **Regras de negócio de desconto** por quantidade de itens
+- **Eventos de domínio** publicados a cada operação relevante
+- **Autenticação JWT** em todos os endpoints protegidos
+- **Paginação e filtros** em todos os endpoints de listagem
+- **92% de cobertura** nos testes unitários
 
-## Frameworks
-This section outlines the frameworks and libraries that are leveraged in the project to enhance development productivity and maintainability. 
+---
 
-See [Frameworks](/.doc/frameworks.md)
+## Tecnologias
 
-<!-- 
-## API Structure
-This section includes links to the detailed documentation for the different API resources:
-- [API General](./docs/general-api.md)
-- [Products API](/.doc/products-api.md)
-- [Carts API](/.doc/carts-api.md)
-- [Users API](/.doc/users-api.md)
-- [Auth API](/.doc/auth-api.md)
--->
+### Backend
+| Tecnologia | Versão | Uso |
+|---|---|---|
+| ![.NET](https://img.shields.io/badge/.NET-8.0-512BD4?style=flat&logo=dotnet) | 8.0 | Framework principal |
+| ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-13-4169E1?style=flat&logo=postgresql) | 13 | Banco de dados relacional |
+| ![EF Core](https://img.shields.io/badge/EF_Core-8.0-512BD4?style=flat&logo=dotnet) | 8.0 | ORM + Migrations |
+| ![MediatR](https://img.shields.io/badge/MediatR-12.4-512BD4?style=flat&logo=dotnet) | 12.4 | CQRS / Mediator pattern |
+| ![AutoMapper](https://img.shields.io/badge/AutoMapper-15.1.3-BE3C28?style=flat&logo=dotnet) | 15.1.3 | Mapeamento de objetos |
+| ![FluentValidation](https://img.shields.io/badge/FluentValidation-11.x-00B4AB?style=flat&logo=dotnet) | 11.x | Validação de comandos |
+| ![Serilog](https://img.shields.io/badge/Serilog-8.x-EF5B25?style=flat&logo=dotnet) | 8.x | Logging estruturado |
+| ![Polly](https://img.shields.io/badge/Polly-8.x-FF6B35?style=flat&logo=dotnet) | 8.x | Retry policy nos eventos |
+| ![Swagger](https://img.shields.io/badge/Swagger-OpenAPI_3.0-85EA2D?style=flat&logo=swagger&logoColor=black) | 6.x | Documentação da API |
 
-## Project Structure
-This section describes the overall structure and organization of the project files and directories. 
+### Testes
+| Tecnologia | Versão | Uso |
+|---|---|---|
+| ![xUnit](https://img.shields.io/badge/xUnit-2.9-512BD4?style=flat&logo=dotnet) | 2.9 | Framework de testes |
+| ![Bogus](https://img.shields.io/badge/Bogus-35.6-512BD4?style=flat&logo=dotnet) | 35.6 | Geração de dados falsos |
+| ![NSubstitute](https://img.shields.io/badge/NSubstitute-5.1-512BD4?style=flat&logo=dotnet) | 5.1 | Mocking |
+| ![FluentAssertions](https://img.shields.io/badge/FluentAssertions-6.12-00B4AB?style=flat&logo=dotnet) | 6.12 | Asserções expressivas |
+| ![MockQueryable](https://img.shields.io/badge/MockQueryable-7.0-512BD4?style=flat&logo=dotnet) | 7.0 | Mock de IQueryable async |
+| ![Testcontainers](https://img.shields.io/badge/Testcontainers-3.10-2496ED?style=flat&logo=docker) | 3.10 | PostgreSQL real nos testes |
 
-See [Project Structure](/.doc/project-structure.md)
+### Infraestrutura
+| Tecnologia | Versão | Uso |
+|---|---|---|
+| ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=flat&logo=docker) | - | Containerização |
+| ![Redis](https://img.shields.io/badge/Redis-7.4-DC382D?style=flat&logo=redis&logoColor=white) | 7.4 | Cache |
+| ![MongoDB](https://img.shields.io/badge/MongoDB-8.0-47A248?style=flat&logo=mongodb&logoColor=white) | 8.0 | NoSQL |
+
+---
+
+## Arquitetura
+
+O projeto segue **Domain-Driven Design (DDD)** com **CQRS** via MediatR:
+
+```
+src/
+├── Ambev.DeveloperEvaluation.Domain        # Entidades, Eventos, Repositórios, Validators
+├── Ambev.DeveloperEvaluation.Application   # Commands, Queries, Handlers, Profiles
+├── Ambev.DeveloperEvaluation.ORM           # DbContext, Repositórios, Migrations
+├── Ambev.DeveloperEvaluation.WebApi        # Controllers, Middleware, Program.cs
+└── Ambev.DeveloperEvaluation.Common        # Utilitários compartilhados
+
+tests/
+├── Ambev.DeveloperEvaluation.Unit          # Testes unitários (92% cobertura)
+├── Ambev.DeveloperEvaluation.Integration   # Testes de integração com Testcontainers
+└── Ambev.DeveloperEvaluation.Functional    # Testes funcionais
+```
+
+### Padrões utilizados
+
+| Padrão | Implementação |
+|---|---|
+| **CQRS** | Commands e Queries separados via MediatR |
+| **Repository Pattern** | Abstração do acesso a dados |
+| **Domain Events** | `SaleCreatedEvent`, `SaleModifiedEvent`, `SaleCancelledEvent`, `ItemCancelledEvent` |
+| **Specification Pattern** | `ActiveUserSpecification` |
+| **External Identity** | Cart referencia Product apenas pelo Id (domínios desacoplados) |
+| **Retry Pattern** | Polly com 3 tentativas e exponential backoff nos eventos |
+
+---
+
+## Regras de Negócio
+
+### Descontos por quantidade de itens idênticos
+
+| Quantidade | Desconto | Exemplo (R$ 100/un) |
+|---|---|---|
+| Abaixo de 4 itens | Sem desconto | 3 × R$100 = **R$300** |
+| 4 a 9 itens | **10%** | 5 × R$100 × 0.90 = **R$450** |
+| 10 a 20 itens | **20%** | 10 × R$100 × 0.80 = **R$800** |
+| Acima de 20 itens | ❌ Não permitido | — |
+
+### Eventos de domínio publicados
+
+| Evento | Quando é publicado |
+|---|---|
+| `SaleCreatedEvent` | Ao criar uma venda |
+| `SaleModifiedEvent` | Ao atualizar uma venda |
+| `SaleCancelledEvent` | Ao deletar/cancelar uma venda |
+| `ItemCancelledEvent` | Ao cancelar um item da venda |
+
+---
+
+## Como Executar
+
+### Pré-requisitos
+
+![Docker](https://img.shields.io/badge/Docker_Desktop-Required-2496ED?style=flat&logo=docker)
+![.NET](https://img.shields.io/badge/.NET_8_SDK-Optional-512BD4?style=flat&logo=dotnet)
+
+### 1. Clone o repositório
+
+```bash
+git clone <url-do-repositorio>
+cd desafio-tecnico/template/backend
+```
+
+### 2. Suba os containers
+
+```bash
+docker-compose up --build -d
+```
+
+| Serviço | URL |
+|---|---|
+| **API** | http://localhost:8080 |
+| **Swagger UI** | http://localhost:8080 |
+| **Health Check** | http://localhost:8080/health |
+| **PostgreSQL** | localhost:5432 |
+
+### 3. Verifique os logs
+
+```bash
+docker logs ambev_developer_evaluation_webapi -f
+```
+
+### 4. Pare os containers
+
+```bash
+docker-compose down
+```
+
+---
+
+## Endpoints
+
+### 🔐 Auth
+
+| Método | Rota | Descrição | Auth |
+|---|---|---|---|
+| `POST` | `/api/auth` | Autenticar usuário | ❌ |
+
+### 👤 Users
+
+| Método | Rota | Descrição | Auth |
+|---|---|---|---|
+| `POST` | `/api/users` | Criar usuário | ❌ |
+| `GET` | `/api/users/{id}` | Buscar usuário por ID | ✅ |
+| `DELETE` | `/api/users/{id}` | Deletar usuário | ✅ |
+
+### 📦 Products
+
+| Método | Rota | Descrição | Auth |
+|---|---|---|---|
+| `POST` | `/api/products` | Criar produto | ✅ |
+| `GET` | `/api/products` | Listar produtos (paginado) | ✅ |
+| `GET` | `/api/products/{id}` | Buscar produto por ID | ✅ |
+| `GET` | `/api/products/categories` | Listar categorias | ✅ |
+| `GET` | `/api/products/category/{category}` | Listar por categoria | ✅ |
+| `PUT` | `/api/products/{id}` | Atualizar produto | ✅ |
+| `DELETE` | `/api/products/{id}` | Deletar produto | ✅ |
+
+### 🛒 Carts
+
+| Método | Rota | Descrição | Auth |
+|---|---|---|---|
+| `POST` | `/api/carts` | Criar carrinho | ✅ |
+| `GET` | `/api/carts` | Listar carrinhos (paginado) | ✅ |
+| `GET` | `/api/carts/{id}` | Buscar carrinho por ID | ✅ |
+| `PUT` | `/api/carts/{id}` | Atualizar carrinho | ✅ |
+| `DELETE` | `/api/carts/{id}` | Deletar carrinho | ✅ |
+
+### 💰 Sales
+
+| Método | Rota | Descrição | Auth |
+|---|---|---|---|
+| `POST` | `/api/sales` | Criar venda | ✅ |
+| `GET` | `/api/sales` | Listar vendas (paginado) | ✅ |
+| `GET` | `/api/sales/{id}` | Buscar venda por ID | ✅ |
+| `PUT` | `/api/sales/{id}` | Atualizar venda | ✅ |
+| `PATCH` | `/api/sales/{id}/items/{itemId}/cancel` | Cancelar item | ✅ |
+| `DELETE` | `/api/sales/{id}` | Cancelar e deletar venda | ✅ |
+
+### Formato de resposta padrão
+
+```json
+{
+  "data": { },
+  "success": true,
+  "message": "Operation successful",
+  "errors": []
+}
+```
+
+### Paginação
+
+```json
+{
+  "currentPage": 1,
+  "totalPages": 3,
+  "totalCount": 30,
+  "data": []
+}
+```
+
+---
+
+## Testes
+
+### Testes Unitários
+
+```bash
+cd template/backend
+dotnet test Ambev.DeveloperEvaluation.sln --filter "FullyQualifiedName~Unit"
+```
+
+<div align="center">
+
+![Coverage](https://img.shields.io/badge/Line_Coverage-92%25-brightgreen?style=for-the-badge)
+![Tests](https://img.shields.io/badge/Tests-172_passing-brightgreen?style=for-the-badge)
+![Failures](https://img.shields.io/badge/Failures-0-brightgreen?style=for-the-badge)
+
+</div>
+
+### Gerar relatório de cobertura
+
+```powershell
+# Instalar ferramenta (apenas uma vez)
+dotnet tool install -g dotnet-reportgenerator-globaltool
+
+# Executar no Windows
+.\coverage-report.ps1
+
+# Executar no Linux/Mac
+./coverage-report.sh
+```
+
+Relatório HTML gerado em `coverage-report/index.html`.
+
+### Testes de Integração
+
+```bash
+dotnet test Ambev.DeveloperEvaluation.sln --filter "FullyQualifiedName~Integration"
+```
+
+> ⚠️ Docker deve estar rodando — os testes sobem automaticamente um container PostgreSQL via **Testcontainers**.
+
+---
+
+## Estrutura do Projeto
+
+```
+template/backend/
+├── src/
+│   ├── Ambev.DeveloperEvaluation.Domain/
+│   │   ├── Entities/          # Sale, SaleItem, Cart, CartItem, Product, User
+│   │   ├── Events/            # SaleCreatedEvent, SaleModifiedEvent, etc.
+│   │   ├── Repositories/      # ISaleRepository, ICartRepository, IProductRepository
+│   │   ├── Validation/        # SaleValidator, CartValidator, ProductValidator
+│   │   └── Specifications/    # ActiveUserSpecification
+│   ├── Ambev.DeveloperEvaluation.Application/
+│   │   ├── Sales/             # Create, Get, GetList, Update, Delete, CancelItem
+│   │   ├── Carts/             # Create, Get, GetList, Update, Delete
+│   │   ├── Products/          # Create, Get, GetList, Categories, Update, Delete
+│   │   ├── Users/             # Create, Get, Delete
+│   │   └── Auth/              # AuthenticateUser
+│   ├── Ambev.DeveloperEvaluation.ORM/
+│   │   ├── Repositories/      # SaleRepository, CartRepository, ProductRepository
+│   │   ├── Services/          # LoggingEventPublisher (Polly retry)
+│   │   └── Migrations/        # InitialMigrations, AddSaleCartProduct
+│   └── Ambev.DeveloperEvaluation.WebApi/
+│       ├── Features/          # Controllers, Requests, Responses, Profiles
+│       └── Middleware/        # ValidationExceptionMiddleware
+└── tests/
+    ├── Ambev.DeveloperEvaluation.Unit/
+    │   ├── Domain/            # Entity tests, Validator tests, Event tests
+    │   ├── Application/       # Handler tests, Mapping tests
+    │   └── Infrastructure/    # LoggingEventPublisher tests
+    └── Ambev.DeveloperEvaluation.Integration/
+        └── Features/          # Auth, Products, Sales integration tests
+```
+
+---
+
+## Importar no Postman
+
+1. Abra o **Postman**
+2. Clique em **Import**
+3. Selecione `docs/DeveloperStore.postman_collection.json`
+4. Execute na ordem: **Create User → Authenticate → Create Product → Create Cart → Create Sale**
+
+> Os scripts automáticos salvam `token`, `userId`, `productId`, `cartId`, `saleId` e `saleItemId` nas variáveis de coleção.
+
+---
+
+## Decisões Técnicas
+
+| Decisão | Justificativa |
+|---|---|
+| **AutoMapper 15.1.3** | Versão sem vulnerabilidades de segurança conhecidas |
+| **MockQueryable.NSubstitute** | Necessário para testar handlers com `CountAsync`/`ToListAsync` do EF em testes unitários |
+| **Testcontainers** | Testes de integração com banco real — maior confiabilidade sem mocks de repositório |
+| **Polly retry nos eventos** | Garante resiliência na publicação de eventos de domínio (3 tentativas, exponential backoff) |
+| **External Identity no Cart** | Cart e Product são domínios independentes — desacoplamento intencional (DDD) |
+| **SuppressModelStateInvalidFilter** | Garante que todas as validações passem pelo middleware customizado |
+| **Production no Docker** | Ambiente correto para containers — `Development` causa instabilidade com DataProtection no Linux |
+| **Kestrel explícito na porta 8080** | Garante binding correto independente de variáveis de ambiente |
+
+---
+
+<div align="center">
+
+*Desenvolvido por **Raphael Ribeiro** — Desafio Técnico Developer Evaluation 2026*
+
+![.NET](https://img.shields.io/badge/.NET-8.0-512BD4?style=flat&logo=dotnet&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-13-4169E1?style=flat&logo=postgresql&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat&logo=docker&logoColor=white)
+![Coverage](https://img.shields.io/badge/Coverage-92%25-brightgreen?style=flat)
+
+</div>
