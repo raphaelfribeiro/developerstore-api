@@ -305,4 +305,116 @@ public class GetProductsHandlerTests
 
         result.TotalCount.Should().Be(2);
     }
+
+    [Fact(DisplayName = "Given query with exact title When getting products Then filters by exact match")]
+    public async Task GetProducts_QueryWithExactTitle_FiltersExactMatch()
+    {
+        var handler = new GetProductsHandler(_productRepository, _mapper);
+        var p1 = ProductTestData.GenerateValidProduct(); p1.Title = "ExactProduct";
+        var p2 = ProductTestData.GenerateValidProduct(); p2.Title = "NotExactProduct";
+
+        var products = new List<Product> { p1, p2 }.BuildMock();
+        _productRepository.GetAllQueryable().Returns(products);
+        _mapper.Map<List<ProductListResult>>(Arg.Any<object>())
+            .Returns(new List<ProductListResult> { new() });
+
+        var result = await handler.Handle(
+            new GetProductsQuery { Page = 1, Size = 10, Title = "ExactProduct" }, CancellationToken.None);
+
+        result.TotalCount.Should().Be(1);
+    }
+
+    [Fact(DisplayName = "Given query with category filter When getting products Then filters by category")]
+    public async Task GetProducts_QueryWithCategoryFilter_FiltersByCategory()
+    {
+        var handler = new GetProductsHandler(_productRepository, _mapper);
+        var p1 = ProductTestData.GenerateValidProduct(); p1.Category = "electronics";
+        var p2 = ProductTestData.GenerateValidProduct(); p2.Category = "clothing";
+
+        var products = new List<Product> { p1, p2 }.BuildMock();
+        _productRepository.GetAllQueryable().Returns(products);
+        _mapper.Map<List<ProductListResult>>(Arg.Any<object>())
+            .Returns(new List<ProductListResult> { new() });
+
+        var result = await handler.Handle(
+            new GetProductsQuery { Page = 1, Size = 10, Category = "electronics" }, CancellationToken.None);
+
+        result.TotalCount.Should().Be(1);
+    }
+
+    [Fact(DisplayName = "Given query with price asc order When getting products Then orders ascending")]
+    public async Task GetProducts_QueryWithPriceAscOrder_OrdersAscending()
+    {
+        var handler = new GetProductsHandler(_productRepository, _mapper);
+        var products = new List<Product>
+        {
+            ProductTestData.GenerateValidProduct(),
+            ProductTestData.GenerateValidProduct()
+        }.BuildMock();
+        _productRepository.GetAllQueryable().Returns(products);
+        _mapper.Map<List<ProductListResult>>(Arg.Any<object>())
+            .Returns(new List<ProductListResult> { new(), new() });
+
+        var result = await handler.Handle(
+            new GetProductsQuery { Page = 1, Size = 10, Order = "price asc" }, CancellationToken.None);
+
+        result.TotalCount.Should().Be(2);
+    }
+
+    [Fact(DisplayName = "Given query with price desc order When getting products Then orders descending")]
+    public async Task GetProducts_QueryWithPriceDescOrder_OrdersDescending()
+    {
+        var handler = new GetProductsHandler(_productRepository, _mapper);
+        var products = new List<Product>
+        {
+            ProductTestData.GenerateValidProduct(),
+            ProductTestData.GenerateValidProduct()
+        }.BuildMock();
+        _productRepository.GetAllQueryable().Returns(products);
+        _mapper.Map<List<ProductListResult>>(Arg.Any<object>())
+            .Returns(new List<ProductListResult> { new(), new() });
+
+        var result = await handler.Handle(
+            new GetProductsQuery { Page = 1, Size = 10, Order = "price desc" }, CancellationToken.None);
+
+        result.TotalCount.Should().Be(2);
+    }
+
+    [Fact(DisplayName = "Given query with title asc order When getting products Then orders ascending")]
+    public async Task GetProducts_QueryWithTitleAscOrder_OrdersAscending()
+    {
+        var handler = new GetProductsHandler(_productRepository, _mapper);
+        var products = new List<Product>
+        {
+            ProductTestData.GenerateValidProduct(),
+            ProductTestData.GenerateValidProduct()
+        }.BuildMock();
+        _productRepository.GetAllQueryable().Returns(products);
+        _mapper.Map<List<ProductListResult>>(Arg.Any<object>())
+            .Returns(new List<ProductListResult> { new(), new() });
+
+        var result = await handler.Handle(
+            new GetProductsQuery { Page = 1, Size = 10, Order = "title asc" }, CancellationToken.None);
+
+        result.TotalCount.Should().Be(2);
+    }
+
+    [Fact(DisplayName = "Given query with title desc order When getting products Then orders descending")]
+    public async Task GetProducts_QueryWithTitleDescOrder_OrdersDescending()
+    {
+        var handler = new GetProductsHandler(_productRepository, _mapper);
+        var products = new List<Product>
+        {
+            ProductTestData.GenerateValidProduct(),
+            ProductTestData.GenerateValidProduct()
+        }.BuildMock();
+        _productRepository.GetAllQueryable().Returns(products);
+        _mapper.Map<List<ProductListResult>>(Arg.Any<object>())
+            .Returns(new List<ProductListResult> { new(), new() });
+
+        var result = await handler.Handle(
+            new GetProductsQuery { Page = 1, Size = 10, Order = "title desc" }, CancellationToken.None);
+
+        result.TotalCount.Should().Be(2);
+    }
 }

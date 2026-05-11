@@ -337,4 +337,62 @@ public class GetCartsHandlerTests
 
         result.TotalCount.Should().Be(1);
     }
+
+    [Fact(DisplayName = "Given query with MaxDate filter When getting carts Then filters correctly")]
+    public async Task Handle_QueryWithMaxDateFilter_FiltersCorrectly()
+    {
+        var oldCart = CartTestData.GenerateValidCart();
+        oldCart.Date = DateTime.UtcNow.AddDays(-30);
+        var recentCart = CartTestData.GenerateValidCart();
+        recentCart.Date = DateTime.UtcNow;
+
+        var carts = new List<Cart> { oldCart, recentCart }.BuildMock();
+        _cartRepository.GetAllQueryable().Returns(carts);
+        _mapper.Map<List<GetCartsResult>>(Arg.Any<object>())
+            .Returns(new List<GetCartsResult> { new() });
+
+        var result = await _handler.Handle(
+            new GetCartsQuery { Page = 1, Size = 10, MaxDate = DateTime.UtcNow.AddDays(-1) },
+            CancellationToken.None);
+
+        result.TotalCount.Should().Be(1);
+    }
+
+    [Fact(DisplayName = "Given query with date asc order When getting carts Then orders ascending")]
+    public async Task Handle_QueryWithDateAscOrder_OrdersAscending()
+    {
+        var cart1 = CartTestData.GenerateValidCart();
+        cart1.Date = DateTime.UtcNow.AddDays(-5);
+        var cart2 = CartTestData.GenerateValidCart();
+        cart2.Date = DateTime.UtcNow;
+
+        var carts = new List<Cart> { cart1, cart2 }.BuildMock();
+        _cartRepository.GetAllQueryable().Returns(carts);
+        _mapper.Map<List<GetCartsResult>>(Arg.Any<object>())
+            .Returns(new List<GetCartsResult> { new(), new() });
+
+        var result = await _handler.Handle(
+            new GetCartsQuery { Page = 1, Size = 10, Order = "date asc" }, CancellationToken.None);
+
+        result.TotalCount.Should().Be(2);
+    }
+
+    [Fact(DisplayName = "Given query with date desc order When getting carts Then orders descending")]
+    public async Task Handle_QueryWithDateDescOrder_OrdersDescending()
+    {
+        var cart1 = CartTestData.GenerateValidCart();
+        cart1.Date = DateTime.UtcNow.AddDays(-5);
+        var cart2 = CartTestData.GenerateValidCart();
+        cart2.Date = DateTime.UtcNow;
+
+        var carts = new List<Cart> { cart1, cart2 }.BuildMock();
+        _cartRepository.GetAllQueryable().Returns(carts);
+        _mapper.Map<List<GetCartsResult>>(Arg.Any<object>())
+            .Returns(new List<GetCartsResult> { new(), new() });
+
+        var result = await _handler.Handle(
+            new GetCartsQuery { Page = 1, Size = 10, Order = "date desc" }, CancellationToken.None);
+
+        result.TotalCount.Should().Be(2);
+    }
 }
