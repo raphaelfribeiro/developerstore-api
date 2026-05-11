@@ -13,7 +13,7 @@
 ![FluentValidation](https://img.shields.io/badge/FluentValidation-11.x-00B4AB?style=for-the-badge&logo=dotnet&logoColor=white)
 
 ![xUnit](https://img.shields.io/badge/xUnit-2.9-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)
-![Coverage](https://img.shields.io/badge/Coverage-91%25-brightgreen?style=for-the-badge&logo=dotnet&logoColor=white)
+![Coverage](https://img.shields.io/badge/Coverage-93%25-brightgreen?style=for-the-badge&logo=dotnet&logoColor=white)
 ![Swagger](https://img.shields.io/badge/Swagger-OpenAPI_3.0-85EA2D?style=for-the-badge&logo=swagger&logoColor=black)
 ![Serilog](https://img.shields.io/badge/Serilog-8.x-EF5B25?style=for-the-badge&logo=dotnet&logoColor=white)
 
@@ -56,7 +56,7 @@ O **DeveloperStore API** é uma API RESTful completa para gestão de um sistema 
 - **Eventos de domínio** publicados a cada operação relevante
 - **Autenticação JWT** em todos os endpoints protegidos
 - **Paginação e filtros** em todos os endpoints de listagem
-- **~91% de cobertura** nos testes unitários (219 testes)
+- **~93% de cobertura** nos testes unitários (240 testes)
 
 ---
 
@@ -89,7 +89,6 @@ O **DeveloperStore API** é uma API RESTful completa para gestão de um sistema 
 | Tecnologia | Versão | Uso |
 |---|---|---|
 | ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=flat&logo=docker) | - | Containerização |
-| ![Redis](https://img.shields.io/badge/Redis-7.4-DC382D?style=flat&logo=redis&logoColor=white) | 7.4 | Cache |
 | ![MongoDB](https://img.shields.io/badge/MongoDB-8.0-47A248?style=flat&logo=mongodb&logoColor=white) | 8.0 | NoSQL (event store) |
 | ![RabbitMQ](https://img.shields.io/badge/RabbitMQ-3.13-FF6600?style=flat&logo=rabbitmq&logoColor=white) | 3.13 | Message broker (Rebus transport) |
 | ![Rebus](https://img.shields.io/badge/Rebus-8.9-512BD4?style=flat&logo=dotnet&logoColor=white) | 8.9 | Service bus — publicação e consumo de domain events |
@@ -105,13 +104,14 @@ O projeto segue **Domain-Driven Design (DDD)** com **CQRS** via MediatR:
 src/
 ├── Ambev.DeveloperEvaluation.Domain        # Entidades, Eventos, Repositórios, Validators
 ├── Ambev.DeveloperEvaluation.Application   # Commands, Queries, Handlers, Profiles
-├── Ambev.DeveloperEvaluation.ORM           # DbContext, Repositórios, Migrations
+├── Ambev.DeveloperEvaluation.ORM           # DbContext, Repositórios, Migrations, Events
+├── Ambev.DeveloperEvaluation.IoC           # Registro de dependências (DependencyResolver)
 ├── Ambev.DeveloperEvaluation.WebApi        # Controllers, Middleware, Program.cs
-└── Ambev.DeveloperEvaluation.Common        # Utilitários compartilhados
+└── Ambev.DeveloperEvaluation.Common        # Segurança, Logging, HealthChecks, Validação
 
 tests/
-├── Ambev.DeveloperEvaluation.Unit          # Testes unitários (~91% cobertura, 219 testes)
-├── Ambev.DeveloperEvaluation.Integration   # Testes de integração com Testcontainers (41 testes)
+├── Ambev.DeveloperEvaluation.Unit          # Testes unitários (~93% cobertura, 240 testes)
+├── Ambev.DeveloperEvaluation.Integration   # Testes de integração com Testcontainers (40 testes)
 └── Ambev.DeveloperEvaluation.Functional    # Testes funcionais
 ```
 
@@ -204,7 +204,6 @@ docker-compose up --build -d
 | **Health Check** | http://localhost:8080/health |
 | **PostgreSQL** | localhost:5432 |
 | **MongoDB** | localhost:27017 |
-| **Redis** | localhost:6379 |
 
 ### 3. Verifique os logs
 
@@ -235,7 +234,6 @@ docker-compose up --build -d
 | `POSTGRES_PASSWORD` | `ev@luAt10n` | Senha do PostgreSQL |
 | `MONGO_USER` | `developer` | Usuário do MongoDB |
 | `MONGO_PASSWORD` | `ev@luAt10n` | Senha do MongoDB |
-| `REDIS_PASSWORD` | `ev@luAt10n` | Senha do Redis |
 | `JWT_SECRET_KEY` | `YourSuperSecretKey...` | Chave de assinatura JWT (mín. 32 chars) ⚠️ |
 | `JWT_ISSUER` | `AmbevDeveloperEvaluation` | Issuer do token JWT |
 | `JWT_AUDIENCE` | `AmbevDeveloperEvaluationUsers` | Audience do token JWT |
@@ -409,8 +407,8 @@ dotnet test Ambev.DeveloperEvaluation.sln --filter "FullyQualifiedName~Unit"
 
 <div align="center">
 
-![Coverage](https://img.shields.io/badge/Line_Coverage-91%25-brightgreen?style=for-the-badge)
-![Tests](https://img.shields.io/badge/Tests-214_passing-brightgreen?style=for-the-badge)
+![Coverage](https://img.shields.io/badge/Line_Coverage-93%25-brightgreen?style=for-the-badge)
+![Tests](https://img.shields.io/badge/Tests-240_passing-brightgreen?style=for-the-badge)
 ![Failures](https://img.shields.io/badge/Failures-0-brightgreen?style=for-the-badge)
 
 </div>
@@ -496,10 +494,19 @@ template/backend/
 │   │   ├── Users/             # Create, Get, GetList, Update, PatchUserRole, Delete
 │   │   └── Auth/              # AuthenticateUser (login por username)
 │   ├── Ambev.DeveloperEvaluation.ORM/
-│   │   ├── Repositories/      # SaleRepository, CartRepository, ProductRepository
-│   │   ├── Services/          # RebusEventPublisher, RebusExtensions, LoggingEventPublisher (Polly retry), MongoEventPublisher (Decorator), DomainEventDocument, MongoDbSettings, MongoDbExtensions
+│   │   ├── Repositories/      # SaleRepository, CartRepository, ProductRepository, UserRepository
+│   │   ├── Services/          # RebusEventPublisher, LoggingEventPublisher (Polly retry), MongoEventPublisher (Decorator), MongoDbSettings, MongoDbExtensions
 │   │   ├── Services/Messaging # SaleCreatedEventHandler, SaleModifiedEventHandler, SaleCancelledEventHandler, ItemCancelledEventHandler (Rebus IHandleMessages)
 │   │   └── Migrations/        # InitialMigrations, AddSaleCartProduct, AddUserProfileFields
+│   ├── Ambev.DeveloperEvaluation.IoC/
+│   │   ├── DependencyResolver.cs          # Ponto central de registro de todos os módulos
+│   │   ├── IModuleInitializer.cs          # Contrato de módulo
+│   │   └── ModuleInitializers/            # ApplicationModuleInitializer, InfrastructureModuleInitializer, WebApiModuleInitializer
+│   ├── Ambev.DeveloperEvaluation.Common/
+│   │   ├── HealthChecks/      # HealthChecksExtension
+│   │   ├── Logging/           # LoggingExtension (Serilog)
+│   │   ├── Security/          # BCryptPasswordHasher, JwtTokenGenerator, IPasswordHasher, IJwtTokenGenerator
+│   │   └── Validation/        # ValidationBehavior (MediatR pipeline), ValidationResult
 │   └── Ambev.DeveloperEvaluation.WebApi/
 │       ├── Features/          # Controllers, Requests, Responses, Profiles
 │       └── Middleware/        # ValidationExceptionMiddleware
@@ -525,7 +532,7 @@ O que seria evoluído com mais tempo:
 | Item | Descrição |
 |---|---|
 | ~~**Message Broker real**~~ | ✅ Implementado: **Rebus 8.9 + RabbitMQ 3.13**. `RebusEventPublisher` é o inner publisher do decorator `MongoEventPublisher`. Em produção usa RabbitMQ (via `RabbitMq:ConnectionString`); em dev/testes usa transport InMemory automaticamente. Quatro `IHandleMessages<T>` handlers processam os eventos no mesmo processo. |
-| **Testes unitários de Cart** | Handlers e validators do domínio Cart cobertos da mesma forma que Sale e Product |
+| ~~**Testes unitários de Cart**~~ | ✅ Implementado: `CartHandlerTests` com 18 testes cobrindo Create, Get, GetList (paginação, filtros de data, userId, ordenação), Update e Delete |
 | ~~**Testes funcionais**~~ | ✅ Implementado: `Ambev.DeveloperEvaluation.Functional` com 3 cenários de negócio (tiers de desconto, limite de quantidade, cancelamento de item) |
 | **API versioning** | Versionamento de rotas (`/api/v1/`) para suportar evolução sem quebrar clientes |
 | **Rate limiting** | Throttling por IP/usuário nos endpoints públicos (auth, criação de usuário) |
@@ -586,6 +593,6 @@ O que seria evoluído com mais tempo:
 ![.NET](https://img.shields.io/badge/.NET-8.0-512BD4?style=flat&logo=dotnet&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-13-4169E1?style=flat&logo=postgresql&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat&logo=docker&logoColor=white)
-![Coverage](https://img.shields.io/badge/Coverage-91%25-brightgreen?style=flat)
+![Coverage](https://img.shields.io/badge/Coverage-93%25-brightgreen?style=flat)
 
 </div>
