@@ -45,6 +45,7 @@ public class SaleRepository : ISaleRepository
     {
         return _context.Sales
             .Include(s => s.Items)
+            .AsNoTracking()
             .AsQueryable();
     }
 

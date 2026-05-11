@@ -10,10 +10,15 @@ services:
       - Jwt__Issuer=${JWT_ISSUER:-AmbevDeveloperEvaluation}
       - Jwt__Audience=${JWT_AUDIENCE:-AmbevDeveloperEvaluationUsers}
       - Jwt__ExpiryMinutes=${JWT_EXPIRY_MINUTES:-60}
+      - MongoDB__ConnectionString=mongodb://${MONGO_USER:-developer}:${MONGO_PASSWORD:-ev%40luAt10n}@ambev.developerevaluation.nosql:27017
+      - MongoDB__DatabaseName=${MONGO_DB:-developer_evaluation}
+      - MongoDB__EventsCollectionName=${MONGO_EVENTS_COLLECTION:-domain_events}
     ports:
       - "8080:8080"
     depends_on:
       ambev.developerevaluation.database:
+        condition: service_healthy
+      ambev.developerevaluation.nosql:
         condition: service_healthy
 
   ambev.developerevaluation.database:

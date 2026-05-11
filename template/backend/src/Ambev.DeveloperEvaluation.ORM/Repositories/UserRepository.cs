@@ -68,7 +68,7 @@ public class UserRepository : IUserRepository
     /// <summary>
     /// Returns an IQueryable of all users for flexible pagination and filtering
     /// </summary>
-    public IQueryable<User> GetAllQueryable() => _context.Users.AsQueryable();
+    public IQueryable<User> GetAllQueryable() => _context.Users.AsNoTracking().AsQueryable();
 
     /// <summary>
     /// Updates an existing user in the database
