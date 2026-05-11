@@ -18,6 +18,7 @@
 ![Serilog](https://img.shields.io/badge/Serilog-8.x-EF5B25?style=for-the-badge&logo=dotnet&logoColor=white)
 
 ![CI](https://github.com/raphaelfernandesribeiro/desafio-tecnico/actions/workflows/ci.yml/badge.svg?branch=develop)
+[![Release](https://img.shields.io/github/v/release/raphaelfernandesribeiro/desafio-tecnico?style=for-the-badge&logo=github&logoColor=white&label=Release)](https://github.com/raphaelfernandesribeiro/desafio-tecnico/releases/latest)
 
 </div>
 
