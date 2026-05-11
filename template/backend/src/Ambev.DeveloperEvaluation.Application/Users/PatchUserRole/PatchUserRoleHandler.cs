@@ -7,11 +7,13 @@ namespace Ambev.DeveloperEvaluation.Application.Users.PatchUserRole;
 public class PatchUserRoleHandler : IRequestHandler<PatchUserRoleCommand, PatchUserRoleResult>
 {
     private readonly IUserRepository _userRepository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
 
-    public PatchUserRoleHandler(IUserRepository userRepository, IMapper mapper)
+    public PatchUserRoleHandler(IUserRepository userRepository, IUnitOfWork unitOfWork, IMapper mapper)
     {
         _userRepository = userRepository;
+        _unitOfWork = unitOfWork;
         _mapper = mapper;
     }
 
@@ -26,6 +28,7 @@ public class PatchUserRoleHandler : IRequestHandler<PatchUserRoleCommand, PatchU
         user.UpdatedAt = DateTime.UtcNow;
 
         var updated = await _userRepository.UpdateAsync(user, cancellationToken);
+        await _unitOfWork.CommitAsync(cancellationToken);
         return _mapper.Map<PatchUserRoleResult>(updated);
     }
 }

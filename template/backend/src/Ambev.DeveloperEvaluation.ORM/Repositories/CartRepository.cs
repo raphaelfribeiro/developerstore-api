@@ -20,7 +20,6 @@ public class CartRepository : ICartRepository
     public async Task<Cart> CreateAsync(Cart cart, CancellationToken cancellationToken = default)
     {
         await _context.Carts.AddAsync(cart, cancellationToken);
-        await _context.SaveChangesAsync(cancellationToken);
         return cart;
     }
 
@@ -55,8 +54,6 @@ public class CartRepository : ICartRepository
         foreach (var item in existing.Items.ToList())
             _context.Entry(item).State = EntityState.Deleted;
 
-        await _context.SaveChangesAsync(cancellationToken);
-
         // Update scalar properties
         existing.UserId = cart.UserId;
         existing.Date = cart.Date;
@@ -75,7 +72,6 @@ public class CartRepository : ICartRepository
             _context.CartItems.Add(newItem);
         }
 
-        await _context.SaveChangesAsync(cancellationToken);
         return existing;
     }
 
@@ -87,7 +83,6 @@ public class CartRepository : ICartRepository
             return false;
 
         _context.Carts.Remove(cart);
-        await _context.SaveChangesAsync(cancellationToken);
         return true;
     }
 }

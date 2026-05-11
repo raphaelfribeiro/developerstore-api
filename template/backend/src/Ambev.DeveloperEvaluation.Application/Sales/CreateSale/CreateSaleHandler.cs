@@ -14,15 +14,18 @@ namespace Ambev.DeveloperEvaluation.Application.Sales.CreateSale;
 public class CreateSaleHandler : IRequestHandler<CreateSaleCommand, CreateSaleResult>
 {
     private readonly ISaleRepository _saleRepository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IEventPublisher _eventPublisher;
     private readonly IMapper _mapper;
 
     public CreateSaleHandler(
         ISaleRepository saleRepository,
+        IUnitOfWork unitOfWork,
         IEventPublisher eventPublisher,
         IMapper mapper)
     {
         _saleRepository = saleRepository;
+        _unitOfWork = unitOfWork;
         _eventPublisher = eventPublisher;
         _mapper = mapper;
     }
@@ -34,6 +37,7 @@ public class CreateSaleHandler : IRequestHandler<CreateSaleCommand, CreateSaleRe
         var sale = BuildSale(command);
 
         var created = await _saleRepository.CreateAsync(sale, cancellationToken);
+        await _unitOfWork.CommitAsync(cancellationToken);
 
         await _eventPublisher.PublishAsync(
             new SaleCreatedEvent(created.Id, created.SaleNumber, created.CustomerId, created.TotalAmount),

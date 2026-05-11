@@ -31,11 +31,13 @@ public class DeleteSaleResult
 public class DeleteSaleHandler : IRequestHandler<DeleteSaleCommand, DeleteSaleResult>
 {
     private readonly ISaleRepository _saleRepository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IEventPublisher _eventPublisher;
 
-    public DeleteSaleHandler(ISaleRepository saleRepository, IEventPublisher eventPublisher)
+    public DeleteSaleHandler(ISaleRepository saleRepository, IUnitOfWork unitOfWork, IEventPublisher eventPublisher)
     {
         _saleRepository = saleRepository;
+        _unitOfWork = unitOfWork;
         _eventPublisher = eventPublisher;
     }
 
@@ -48,10 +50,9 @@ public class DeleteSaleHandler : IRequestHandler<DeleteSaleCommand, DeleteSaleRe
         var sale = await _saleRepository.GetByIdAsync(command.Id, cancellationToken)
             ?? throw new KeyNotFoundException($"Sale with ID {command.Id} not found.");
 
-        // Business: cancel the sale before removing (triggers SaleCancelledEvent)
         sale.Cancel();
-        await _saleRepository.SaveAsync(sale, cancellationToken);
         await _saleRepository.DeleteAsync(command.Id, cancellationToken);
+        await _unitOfWork.CommitAsync(cancellationToken);
 
         await _eventPublisher.PublishAsync(
             new SaleCancelledEvent(sale.Id, sale.SaleNumber),

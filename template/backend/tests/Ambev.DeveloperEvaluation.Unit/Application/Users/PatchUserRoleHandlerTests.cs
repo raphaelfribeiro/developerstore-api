@@ -13,14 +13,17 @@ namespace Ambev.DeveloperEvaluation.Unit.Application.Users;
 public class PatchUserRoleHandlerTests
 {
     private readonly IUserRepository _userRepository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly PatchUserRoleHandler _handler;
 
     public PatchUserRoleHandlerTests()
     {
         _userRepository = Substitute.For<IUserRepository>();
+        _unitOfWork = Substitute.For<IUnitOfWork>();
+        _unitOfWork.CommitAsync(Arg.Any<CancellationToken>()).Returns(1);
         _mapper = Substitute.For<IMapper>();
-        _handler = new PatchUserRoleHandler(_userRepository, _mapper);
+        _handler = new PatchUserRoleHandler(_userRepository, _unitOfWork, _mapper);
     }
 
     [Fact(DisplayName = "Given existing user When patching role Then returns updated result")]

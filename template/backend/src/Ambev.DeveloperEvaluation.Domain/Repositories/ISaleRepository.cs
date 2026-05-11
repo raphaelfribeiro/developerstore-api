@@ -37,9 +37,4 @@ public interface ISaleRepository
     /// </summary>
     Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default);
 
-    /// <summary>
-    /// Persists changes to a tracked Sale entity without replacing its items.
-    /// Used for partial updates like cancellations.
-    /// </summary>
-    Task<Sale> SaveAsync(Sale sale, CancellationToken cancellationToken = default);
 }

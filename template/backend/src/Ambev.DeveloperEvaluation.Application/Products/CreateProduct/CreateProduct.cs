@@ -88,11 +88,13 @@ public class CreateProductProfile : Profile
 public class CreateProductHandler : IRequestHandler<CreateProductCommand, CreateProductResult>
 {
     private readonly IProductRepository _productRepository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
 
-    public CreateProductHandler(IProductRepository productRepository, IMapper mapper)
+    public CreateProductHandler(IProductRepository productRepository, IUnitOfWork unitOfWork, IMapper mapper)
     {
         _productRepository = productRepository;
+        _unitOfWork = unitOfWork;
         _mapper = mapper;
     }
 
@@ -104,6 +106,7 @@ public class CreateProductHandler : IRequestHandler<CreateProductCommand, Create
 
         var product = _mapper.Map<Product>(command);
         var created = await _productRepository.CreateAsync(product, cancellationToken);
+        await _unitOfWork.CommitAsync(cancellationToken);
         return _mapper.Map<CreateProductResult>(created);
     }
 }

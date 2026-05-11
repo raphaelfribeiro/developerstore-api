@@ -18,6 +18,7 @@ namespace Ambev.DeveloperEvaluation.Unit.Application.Products;
 public class CreateProductHandlerTests
 {
     private readonly IProductRepository _productRepository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly CreateProductHandler _handler;
     private static readonly Faker Faker = new();
@@ -25,8 +26,10 @@ public class CreateProductHandlerTests
     public CreateProductHandlerTests()
     {
         _productRepository = Substitute.For<IProductRepository>();
+        _unitOfWork = Substitute.For<IUnitOfWork>();
+        _unitOfWork.CommitAsync(Arg.Any<CancellationToken>()).Returns(1);
         _mapper = Substitute.For<IMapper>();
-        _handler = new CreateProductHandler(_productRepository, _mapper);
+        _handler = new CreateProductHandler(_productRepository, _unitOfWork, _mapper);
     }
 
     [Fact(DisplayName = "Given valid product command When creating Then returns success response")]
@@ -103,12 +106,15 @@ public class GetProductHandlerTests
 public class DeleteProductHandlerTests
 {
     private readonly IProductRepository _productRepository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly DeleteProductHandler _handler;
 
     public DeleteProductHandlerTests()
     {
         _productRepository = Substitute.For<IProductRepository>();
-        _handler = new DeleteProductHandler(_productRepository);
+        _unitOfWork = Substitute.For<IUnitOfWork>();
+        _unitOfWork.CommitAsync(Arg.Any<CancellationToken>()).Returns(1);
+        _handler = new DeleteProductHandler(_productRepository, _unitOfWork);
     }
 
     [Fact(DisplayName = "Given existing product When deleting Then returns success")]
@@ -132,14 +138,17 @@ public class DeleteProductHandlerTests
 public class UpdateProductHandlerTests
 {
     private readonly IProductRepository _productRepository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly UpdateProductHandler _handler;
 
     public UpdateProductHandlerTests()
     {
         _productRepository = Substitute.For<IProductRepository>();
+        _unitOfWork = Substitute.For<IUnitOfWork>();
+        _unitOfWork.CommitAsync(Arg.Any<CancellationToken>()).Returns(1);
         _mapper = Substitute.For<IMapper>();
-        _handler = new UpdateProductHandler(_productRepository, _mapper);
+        _handler = new UpdateProductHandler(_productRepository, _unitOfWork, _mapper);
     }
 
     [Fact(DisplayName = "Given valid update command When updating product Then returns updated product")]

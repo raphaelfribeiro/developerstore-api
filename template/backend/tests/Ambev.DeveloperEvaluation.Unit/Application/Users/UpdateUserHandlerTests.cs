@@ -15,6 +15,7 @@ namespace Ambev.DeveloperEvaluation.Unit.Application.Users;
 public class UpdateUserHandlerTests
 {
     private readonly IUserRepository _userRepository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly IPasswordHasher _passwordHasher;
     private readonly UpdateUserHandler _handler;
@@ -22,9 +23,11 @@ public class UpdateUserHandlerTests
     public UpdateUserHandlerTests()
     {
         _userRepository = Substitute.For<IUserRepository>();
+        _unitOfWork = Substitute.For<IUnitOfWork>();
+        _unitOfWork.CommitAsync(Arg.Any<CancellationToken>()).Returns(1);
         _mapper = Substitute.For<IMapper>();
         _passwordHasher = Substitute.For<IPasswordHasher>();
-        _handler = new UpdateUserHandler(_userRepository, _mapper, _passwordHasher);
+        _handler = new UpdateUserHandler(_userRepository, _unitOfWork, _mapper, _passwordHasher);
     }
 
     [Fact(DisplayName = "Given existing user When admin updates all fields Then returns updated result")]

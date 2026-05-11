@@ -9,12 +9,14 @@ namespace Ambev.DeveloperEvaluation.Application.Users.UpdateUser;
 public class UpdateUserHandler : IRequestHandler<UpdateUserCommand, UpdateUserResult>
 {
     private readonly IUserRepository _userRepository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly IPasswordHasher _passwordHasher;
 
-    public UpdateUserHandler(IUserRepository userRepository, IMapper mapper, IPasswordHasher passwordHasher)
+    public UpdateUserHandler(IUserRepository userRepository, IUnitOfWork unitOfWork, IMapper mapper, IPasswordHasher passwordHasher)
     {
         _userRepository = userRepository;
+        _unitOfWork = unitOfWork;
         _mapper = mapper;
         _passwordHasher = passwordHasher;
     }
@@ -55,6 +57,7 @@ public class UpdateUserHandler : IRequestHandler<UpdateUserCommand, UpdateUserRe
             user.Password = _passwordHasher.HashPassword(request.Password);
 
         var updated = await _userRepository.UpdateAsync(user, cancellationToken);
+        await _unitOfWork.CommitAsync(cancellationToken);
         return _mapper.Map<UpdateUserResult>(updated);
     }
 }

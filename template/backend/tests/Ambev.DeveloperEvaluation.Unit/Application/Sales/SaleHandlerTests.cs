@@ -76,6 +76,7 @@ public class GetSaleHandlerTests
 public class UpdateSaleHandlerTests
 {
     private readonly ISaleRepository _saleRepository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IEventPublisher _eventPublisher;
     private readonly IMapper _mapper;
     private readonly UpdateSaleHandler _handler;
@@ -83,9 +84,11 @@ public class UpdateSaleHandlerTests
     public UpdateSaleHandlerTests()
     {
         _saleRepository = Substitute.For<ISaleRepository>();
+        _unitOfWork = Substitute.For<IUnitOfWork>();
+        _unitOfWork.CommitAsync(Arg.Any<CancellationToken>()).Returns(1);
         _eventPublisher = Substitute.For<IEventPublisher>();
         _mapper = Substitute.For<IMapper>();
-        _handler = new UpdateSaleHandler(_saleRepository, _eventPublisher, _mapper);
+        _handler = new UpdateSaleHandler(_saleRepository, _unitOfWork, _eventPublisher, _mapper);
     }
 
     [Fact(DisplayName = "Given valid update command When updating sale Then publishes SaleModifiedEvent")]
@@ -167,14 +170,17 @@ public class UpdateSaleHandlerTests
 public class DeleteSaleHandlerTests
 {
     private readonly ISaleRepository _saleRepository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IEventPublisher _eventPublisher;
     private readonly DeleteSaleHandler _handler;
 
     public DeleteSaleHandlerTests()
     {
         _saleRepository = Substitute.For<ISaleRepository>();
+        _unitOfWork = Substitute.For<IUnitOfWork>();
+        _unitOfWork.CommitAsync(Arg.Any<CancellationToken>()).Returns(1);
         _eventPublisher = Substitute.For<IEventPublisher>();
-        _handler = new DeleteSaleHandler(_saleRepository, _eventPublisher);
+        _handler = new DeleteSaleHandler(_saleRepository, _unitOfWork, _eventPublisher);
     }
 
     [Fact(DisplayName = "Given existing sale When deleting Then publishes SaleCancelledEvent")]
@@ -183,7 +189,6 @@ public class DeleteSaleHandlerTests
         // Given
         var sale = SaleTestData.GenerateValidSale(quantity: 5);
         _saleRepository.GetByIdAsync(sale.Id, Arg.Any<CancellationToken>()).Returns(sale);
-        _saleRepository.SaveAsync(sale, Arg.Any<CancellationToken>()).Returns(sale);
         _saleRepository.DeleteAsync(sale.Id, Arg.Any<CancellationToken>()).Returns(true);
 
         // When
@@ -217,14 +222,17 @@ public class DeleteSaleHandlerTests
 public class CancelSaleItemHandlerTests
 {
     private readonly ISaleRepository _saleRepository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IEventPublisher _eventPublisher;
     private readonly CancelSaleItemHandler _handler;
 
     public CancelSaleItemHandlerTests()
     {
         _saleRepository = Substitute.For<ISaleRepository>();
+        _unitOfWork = Substitute.For<IUnitOfWork>();
+        _unitOfWork.CommitAsync(Arg.Any<CancellationToken>()).Returns(1);
         _eventPublisher = Substitute.For<IEventPublisher>();
-        _handler = new CancelSaleItemHandler(_saleRepository, _eventPublisher);
+        _handler = new CancelSaleItemHandler(_saleRepository, _unitOfWork, _eventPublisher);
     }
 
     [Fact(DisplayName = "Given existing sale item When cancelling Then publishes ItemCancelledEvent")]
@@ -235,7 +243,6 @@ public class CancelSaleItemHandlerTests
         var itemId = sale.Items.First().Id; // Id is now Guid.NewGuid()
 
         _saleRepository.GetByIdAsync(sale.Id, Arg.Any<CancellationToken>()).Returns(sale);
-        _saleRepository.SaveAsync(sale, Arg.Any<CancellationToken>()).Returns(sale);
 
         // When
         var result = await _handler.Handle(

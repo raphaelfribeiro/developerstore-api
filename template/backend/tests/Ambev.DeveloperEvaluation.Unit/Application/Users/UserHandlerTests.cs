@@ -82,12 +82,15 @@ public class GetUserHandlerTests
 public class DeleteUserHandlerTests
 {
     private readonly IUserRepository _userRepository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly DeleteUserHandler _handler;
 
     public DeleteUserHandlerTests()
     {
         _userRepository = Substitute.For<IUserRepository>();
-        _handler = new DeleteUserHandler(_userRepository);
+        _unitOfWork = Substitute.For<IUnitOfWork>();
+        _unitOfWork.CommitAsync(Arg.Any<CancellationToken>()).Returns(1);
+        _handler = new DeleteUserHandler(_userRepository, _unitOfWork);
     }
 
     [Fact(DisplayName = "Given existing user When deleting Then returns success")]
