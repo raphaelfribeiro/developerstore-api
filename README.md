@@ -17,6 +17,8 @@
 ![Swagger](https://img.shields.io/badge/Swagger-OpenAPI_3.0-85EA2D?style=for-the-badge&logo=swagger&logoColor=black)
 ![Serilog](https://img.shields.io/badge/Serilog-8.x-EF5B25?style=for-the-badge&logo=dotnet&logoColor=white)
 
+![CI](https://github.com/raphaelfernandesribeiro/desafio-tecnico/actions/workflows/ci.yml/badge.svg?branch=develop)
+
 </div>
 
 ---
@@ -83,12 +85,13 @@ O **DeveloperStore API** é uma API RESTful completa para gestão de um sistema 
 | ![MockQueryable](https://img.shields.io/badge/MockQueryable-7.0-512BD4?style=flat&logo=dotnet) | 7.0 | Mock de IQueryable async (Unit) |
 | ![Testcontainers](https://img.shields.io/badge/Testcontainers-3.10-2496ED?style=flat&logo=docker) | 3.10 | PostgreSQL real nos testes Integration e Functional |
 
-### Infraestrutura
+### Infraestrutura e DevOps
 | Tecnologia | Versão | Uso |
 |---|---|---|
 | ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=flat&logo=docker) | - | Containerização |
 | ![Redis](https://img.shields.io/badge/Redis-7.4-DC382D?style=flat&logo=redis&logoColor=white) | 7.4 | Cache |
-| ![MongoDB](https://img.shields.io/badge/MongoDB-8.0-47A248?style=flat&logo=mongodb&logoColor=white) | 8.0 | NoSQL |
+| ![MongoDB](https://img.shields.io/badge/MongoDB-8.0-47A248?style=flat&logo=mongodb&logoColor=white) | 8.0 | NoSQL (event store) |
+| ![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-CI/CD-2088FF?style=flat&logo=githubactions&logoColor=white) | - | Build, testes, cobertura e push de imagem Docker |
 
 ---
 
@@ -488,7 +491,7 @@ O que seria evoluído com mais tempo:
 | ~~**Testes funcionais**~~ | ✅ Implementado: `Ambev.DeveloperEvaluation.Functional` com 3 cenários de negócio (tiers de desconto, limite de quantidade, cancelamento de item) |
 | **API versioning** | Versionamento de rotas (`/api/v1/`) para suportar evolução sem quebrar clientes |
 | **Rate limiting** | Throttling por IP/usuário nos endpoints públicos (auth, criação de usuário) |
-| **CI/CD pipeline** | GitHub Actions definido em `.github/workflows/ci.yml` com build, testes, relatório de cobertura e push de imagem Docker |
+| ~~**CI/CD pipeline**~~ | ✅ Implementado: `.github/workflows/ci.yml` com build, testes unitários (coverage), integração e funcionais (Testcontainers), relatório de cobertura como artefato, e build + push condicional da imagem Docker |
 
 ---
 
