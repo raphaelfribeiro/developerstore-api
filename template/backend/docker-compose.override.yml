@@ -3,7 +3,7 @@ version: '3.8'
 services:
   ambev.developerevaluation.webapi:
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080
       - ConnectionStrings__DefaultConnection=Host=ambev.developerevaluation.database;Port=5432;Database=${POSTGRES_DB:-developer_evaluation};Username=${POSTGRES_USER:-developer};Password=${POSTGRES_PASSWORD:-ev@luAt10n}
       - Jwt__SecretKey=${JWT_SECRET_KEY:-YourSuperSecretKeyForJwtTokenGenerationThatShouldBeAtLeast32BytesLong}
@@ -31,10 +31,6 @@ services:
   ambev.developerevaluation.nosql:
     ports:
       - "27017:27017"
-
-  ambev.developerevaluation.cache:
-    ports:
-      - "6379:6379"
 
   ambev.developerevaluation.rabbitmq:
     ports:
