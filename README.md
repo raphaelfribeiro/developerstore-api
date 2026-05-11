@@ -332,29 +332,63 @@ Parâmetros de query com prefixo `_`:
 
 ### Filtros
 
-Os endpoints de listagem suportam três tipos de filtro, combináveis com `&` (AND):
+Todos os parâmetros de filtro são opcionais e combináveis com `&` (AND).
 
-**Valor exato por campo**
-```
-GET /api/products?category=electronics
-```
+#### `GET /api/users`
 
-**Correspondência parcial — wildcard `*`**
-```
-GET /api/products?title=Samsung*        # começa com
-GET /api/products?category=*clothing    # termina com
-```
+| Parâmetro | Tipo | Descrição |
+|---|---|---|
+| `_page` | int | Página (padrão: 1) |
+| `_size` | int | Itens por página (padrão: 10) |
+| `_order` | string | Ordenação: `username asc`, `username desc`, `email asc`, `email desc` |
 
-**Faixa numérica e de data — prefixos `_min` / `_max`**
-```
-GET /api/products?_minPrice=50&_maxPrice=200
-GET /api/carts?_minDate=2024-01-01&_maxDate=2024-12-31
-GET /api/sales?_minDate=2024-06-01
-```
+> Não possui filtros de campo — retorna todos os usuários paginados.
 
-**Exemplo combinado**
+#### `GET /api/products`
+
+| Parâmetro | Tipo | Descrição |
+|---|---|---|
+| `_page` | int | Página (padrão: 1) |
+| `_size` | int | Itens por página (padrão: 10) |
+| `_order` | string | `price asc`, `price desc`, `title asc`, `title desc` |
+| `title` | string | Correspondência exata ou parcial com wildcard `*` (`Samsung*`, `*phone`) |
+| `category` | string | Correspondência exata (case-insensitive): `electronics`, `jewelery`, etc. |
+| `_minPrice` | decimal | Preço mínimo (inclusive) |
+| `_maxPrice` | decimal | Preço máximo (inclusive) |
+
 ```
 GET /api/products?category=electronics&_minPrice=100&title=Samsung*
+```
+
+#### `GET /api/carts`
+
+| Parâmetro | Tipo | Descrição |
+|---|---|---|
+| `_page` | int | Página (padrão: 1) |
+| `_size` | int | Itens por página (padrão: 10) |
+| `_order` | string | Ordenação por campo (padrão: data desc) |
+| `userId` | guid | Filtrar carrinhos de um usuário específico |
+| `_minDate` | datetime | Data mínima do carrinho (inclusive) |
+| `_maxDate` | datetime | Data máxima do carrinho (inclusive) |
+
+```
+GET /api/carts?userId=3fa85f64-5717-4562-b3fc-2c963f66afa6&_minDate=2024-01-01
+```
+
+#### `GET /api/sales`
+
+| Parâmetro | Tipo | Descrição |
+|---|---|---|
+| `_page` | int | Página (padrão: 1) |
+| `_size` | int | Itens por página (padrão: 10) |
+| `_order` | string | `saledate asc`, `saledate desc`, `totalamount asc`, `totalamount desc`, `salenumber asc`, `salenumber desc` |
+| `customerName` | string | Correspondência parcial (contains) no nome do cliente |
+| `isCancelled` | bool | `true` para listar apenas vendas canceladas, `false` para ativas |
+| `_minDate` | datetime | Data mínima da venda (inclusive) |
+| `_maxDate` | datetime | Data máxima da venda (inclusive) |
+
+```
+GET /api/sales?customerName=Test&isCancelled=false&_minDate=2024-01-01&_order=saledate desc
 ```
 
 ---
