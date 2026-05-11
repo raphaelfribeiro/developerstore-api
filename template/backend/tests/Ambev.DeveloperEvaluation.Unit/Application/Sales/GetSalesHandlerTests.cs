@@ -136,4 +136,146 @@ public class GetSalesHandlerTests
         // Then
         result.Should().NotBeNull();
     }
+
+    [Fact(DisplayName = "Given query with order by saledate desc When getting sales Then orders descending")]
+    public async Task Handle_QueryWithOrderBySaleDateDesc_OrdersDescending()
+    {
+        var sales = new List<Sale>
+        {
+            SaleTestData.GenerateValidSale(quantity: 3),
+            SaleTestData.GenerateValidSale(quantity: 3)
+        }.BuildMock();
+        _saleRepository.GetAllQueryable().Returns(sales);
+        _mapper.Map<List<GetSalesResult>>(Arg.Any<object>()).Returns(new List<GetSalesResult> { new(), new() });
+
+        var result = await _handler.Handle(
+            new GetSalesQuery { Page = 1, Size = 10, Order = "saledate desc" }, CancellationToken.None);
+
+        result.TotalCount.Should().Be(2);
+    }
+
+    [Fact(DisplayName = "Given query with order by totalamount asc When getting sales Then orders ascending")]
+    public async Task Handle_QueryWithOrderByTotalAmountAsc_OrdersAscending()
+    {
+        var sales = new List<Sale>
+        {
+            SaleTestData.GenerateValidSale(quantity: 3),
+            SaleTestData.GenerateValidSale(quantity: 5)
+        }.BuildMock();
+        _saleRepository.GetAllQueryable().Returns(sales);
+        _mapper.Map<List<GetSalesResult>>(Arg.Any<object>()).Returns(new List<GetSalesResult> { new(), new() });
+
+        var result = await _handler.Handle(
+            new GetSalesQuery { Page = 1, Size = 10, Order = "totalamount asc" }, CancellationToken.None);
+
+        result.TotalCount.Should().Be(2);
+    }
+
+    [Fact(DisplayName = "Given query with order by totalamount desc When getting sales Then orders descending")]
+    public async Task Handle_QueryWithOrderByTotalAmountDesc_OrdersDescending()
+    {
+        var sales = new List<Sale>
+        {
+            SaleTestData.GenerateValidSale(quantity: 3),
+            SaleTestData.GenerateValidSale(quantity: 5)
+        }.BuildMock();
+        _saleRepository.GetAllQueryable().Returns(sales);
+        _mapper.Map<List<GetSalesResult>>(Arg.Any<object>()).Returns(new List<GetSalesResult> { new(), new() });
+
+        var result = await _handler.Handle(
+            new GetSalesQuery { Page = 1, Size = 10, Order = "totalamount desc" }, CancellationToken.None);
+
+        result.TotalCount.Should().Be(2);
+    }
+
+    [Fact(DisplayName = "Given query with order by salenumber asc When getting sales Then orders ascending")]
+    public async Task Handle_QueryWithOrderBySaleNumberAsc_OrdersAscending()
+    {
+        var sales = new List<Sale>
+        {
+            SaleTestData.GenerateValidSale(quantity: 3),
+            SaleTestData.GenerateValidSale(quantity: 3)
+        }.BuildMock();
+        _saleRepository.GetAllQueryable().Returns(sales);
+        _mapper.Map<List<GetSalesResult>>(Arg.Any<object>()).Returns(new List<GetSalesResult> { new(), new() });
+
+        var result = await _handler.Handle(
+            new GetSalesQuery { Page = 1, Size = 10, Order = "salenumber asc" }, CancellationToken.None);
+
+        result.TotalCount.Should().Be(2);
+    }
+
+    [Fact(DisplayName = "Given query with order by salenumber desc When getting sales Then orders descending")]
+    public async Task Handle_QueryWithOrderBySaleNumberDesc_OrdersDescending()
+    {
+        var sales = new List<Sale>
+        {
+            SaleTestData.GenerateValidSale(quantity: 3),
+            SaleTestData.GenerateValidSale(quantity: 3)
+        }.BuildMock();
+        _saleRepository.GetAllQueryable().Returns(sales);
+        _mapper.Map<List<GetSalesResult>>(Arg.Any<object>()).Returns(new List<GetSalesResult> { new(), new() });
+
+        var result = await _handler.Handle(
+            new GetSalesQuery { Page = 1, Size = 10, Order = "salenumber desc" }, CancellationToken.None);
+
+        result.TotalCount.Should().Be(2);
+    }
+
+    [Fact(DisplayName = "Given query with unrecognized order When getting sales Then falls back to default ordering")]
+    public async Task Handle_QueryWithUnrecognizedOrder_FallsBackToDefault()
+    {
+        var sales = new List<Sale>
+        {
+            SaleTestData.GenerateValidSale(quantity: 3),
+            SaleTestData.GenerateValidSale(quantity: 3)
+        }.BuildMock();
+        _saleRepository.GetAllQueryable().Returns(sales);
+        _mapper.Map<List<GetSalesResult>>(Arg.Any<object>()).Returns(new List<GetSalesResult> { new(), new() });
+
+        var result = await _handler.Handle(
+            new GetSalesQuery { Page = 1, Size = 10, Order = "unknown field" }, CancellationToken.None);
+
+        result.TotalCount.Should().Be(2);
+    }
+
+    [Fact(DisplayName = "Given query with MinDate filter When getting sales Then filters correctly")]
+    public async Task Handle_QueryWithMinDateFilter_FiltersCorrectly()
+    {
+        var oldSale = SaleTestData.GenerateValidSale(quantity: 3);
+        oldSale.SaleDate = DateTime.UtcNow.AddDays(-30);
+        var recentSale = SaleTestData.GenerateValidSale(quantity: 3);
+        recentSale.SaleDate = DateTime.UtcNow;
+
+        var sales = new List<Sale> { oldSale, recentSale }.BuildMock();
+        _saleRepository.GetAllQueryable().Returns(sales);
+        _mapper.Map<List<GetSalesResult>>(Arg.Any<object>())
+            .Returns(new List<GetSalesResult> { new() });
+
+        var result = await _handler.Handle(
+            new GetSalesQuery { Page = 1, Size = 10, MinDate = DateTime.UtcNow.AddDays(-1) },
+            CancellationToken.None);
+
+        result.TotalCount.Should().Be(1);
+    }
+
+    [Fact(DisplayName = "Given query with MaxDate filter When getting sales Then filters correctly")]
+    public async Task Handle_QueryWithMaxDateFilter_FiltersCorrectly()
+    {
+        var oldSale = SaleTestData.GenerateValidSale(quantity: 3);
+        oldSale.SaleDate = DateTime.UtcNow.AddDays(-30);
+        var recentSale = SaleTestData.GenerateValidSale(quantity: 3);
+        recentSale.SaleDate = DateTime.UtcNow;
+
+        var sales = new List<Sale> { oldSale, recentSale }.BuildMock();
+        _saleRepository.GetAllQueryable().Returns(sales);
+        _mapper.Map<List<GetSalesResult>>(Arg.Any<object>())
+            .Returns(new List<GetSalesResult> { new() });
+
+        var result = await _handler.Handle(
+            new GetSalesQuery { Page = 1, Size = 10, MaxDate = DateTime.UtcNow.AddDays(-1) },
+            CancellationToken.None);
+
+        result.TotalCount.Should().Be(1);
+    }
 }

@@ -99,4 +99,80 @@ public class GetUsersHandlerTests
         result.Should().NotBeNull();
         result.TotalCount.Should().Be(2);
     }
+
+    [Fact(DisplayName = "Given order by email asc When getting users Then orders ascending by email")]
+    public async Task Handle_OrderByEmailAsc_AppliesAscendingEmailOrdering()
+    {
+        var users = new[]
+        {
+            UserTestData.GenerateValidUser(),
+            UserTestData.GenerateValidUser()
+        }.AsQueryable().BuildMock();
+
+        _userRepository.GetAllQueryable().Returns(users);
+        _mapper.Map<List<GetUsersResult>>(Arg.Any<object>())
+            .Returns(new List<GetUsersResult> { new(), new() });
+
+        var result = await _handler.Handle(
+            new GetUsersQuery { Page = 1, Size = 10, Order = "email asc" }, CancellationToken.None);
+
+        result.TotalCount.Should().Be(2);
+    }
+
+    [Fact(DisplayName = "Given order by username asc When getting users Then orders ascending by username")]
+    public async Task Handle_OrderByUsernameAsc_AppliesAscendingUsernameOrdering()
+    {
+        var users = new[]
+        {
+            UserTestData.GenerateValidUser(),
+            UserTestData.GenerateValidUser()
+        }.AsQueryable().BuildMock();
+
+        _userRepository.GetAllQueryable().Returns(users);
+        _mapper.Map<List<GetUsersResult>>(Arg.Any<object>())
+            .Returns(new List<GetUsersResult> { new(), new() });
+
+        var result = await _handler.Handle(
+            new GetUsersQuery { Page = 1, Size = 10, Order = "username asc" }, CancellationToken.None);
+
+        result.TotalCount.Should().Be(2);
+    }
+
+    [Fact(DisplayName = "Given order by username desc When getting users Then orders descending by username")]
+    public async Task Handle_OrderByUsernameDesc_AppliesDescendingUsernameOrdering()
+    {
+        var users = new[]
+        {
+            UserTestData.GenerateValidUser(),
+            UserTestData.GenerateValidUser()
+        }.AsQueryable().BuildMock();
+
+        _userRepository.GetAllQueryable().Returns(users);
+        _mapper.Map<List<GetUsersResult>>(Arg.Any<object>())
+            .Returns(new List<GetUsersResult> { new(), new() });
+
+        var result = await _handler.Handle(
+            new GetUsersQuery { Page = 1, Size = 10, Order = "username desc" }, CancellationToken.None);
+
+        result.TotalCount.Should().Be(2);
+    }
+
+    [Fact(DisplayName = "Given unrecognized order field When getting users Then falls back to default ordering")]
+    public async Task Handle_UnrecognizedOrderField_FallsBackToDefaultOrdering()
+    {
+        var users = new[]
+        {
+            UserTestData.GenerateValidUser(),
+            UserTestData.GenerateValidUser()
+        }.AsQueryable().BuildMock();
+
+        _userRepository.GetAllQueryable().Returns(users);
+        _mapper.Map<List<GetUsersResult>>(Arg.Any<object>())
+            .Returns(new List<GetUsersResult> { new(), new() });
+
+        var result = await _handler.Handle(
+            new GetUsersQuery { Page = 1, Size = 10, Order = "unknown field" }, CancellationToken.None);
+
+        result.TotalCount.Should().Be(2);
+    }
 }
