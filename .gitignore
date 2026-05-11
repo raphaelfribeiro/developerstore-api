@@ -42,6 +42,24 @@ bld/
 # Visual Studio 2017 auto generated files
 Generated\ Files/
 
+# Visual Studio Code
+.vscode/
+
+# Test Coverage
+**/coverage-report/
+**/coverage-results/
+
+# JetBrains Rider
+.idea/
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Environment Files
+.env
+.env.*
+
 # MSTest test Results
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*

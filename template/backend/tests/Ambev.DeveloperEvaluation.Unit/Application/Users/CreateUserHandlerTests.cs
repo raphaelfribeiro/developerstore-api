@@ -1,6 +1,7 @@
 using Ambev.DeveloperEvaluation.Application.Users.CreateUser;
 using Ambev.DeveloperEvaluation.Common.Security;
 using Ambev.DeveloperEvaluation.Domain.Entities;
+using Ambev.DeveloperEvaluation.Domain.Events;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
 using Ambev.DeveloperEvaluation.Unit.Domain;
 using AutoMapper;
@@ -8,7 +9,7 @@ using FluentAssertions;
 using NSubstitute;
 using Xunit;
 
-namespace Ambev.DeveloperEvaluation.Unit.Application;
+namespace Ambev.DeveloperEvaluation.Unit.Application.Users;
 
 /// <summary>
 /// Contains unit tests for the <see cref="CreateUserHandler"/> class.
@@ -16,20 +17,21 @@ namespace Ambev.DeveloperEvaluation.Unit.Application;
 public class CreateUserHandlerTests
 {
     private readonly IUserRepository _userRepository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly IPasswordHasher _passwordHasher;
+    private readonly IEventPublisher _eventPublisher;
     private readonly CreateUserHandler _handler;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="CreateUserHandlerTests"/> class.
-    /// Sets up the test dependencies and creates fake data generators.
-    /// </summary>
     public CreateUserHandlerTests()
     {
         _userRepository = Substitute.For<IUserRepository>();
+        _unitOfWork = Substitute.For<IUnitOfWork>();
+        _unitOfWork.CommitAsync(Arg.Any<CancellationToken>()).Returns(1);
         _mapper = Substitute.For<IMapper>();
         _passwordHasher = Substitute.For<IPasswordHasher>();
-        _handler = new CreateUserHandler(_userRepository, _mapper, _passwordHasher);
+        _eventPublisher = Substitute.For<IEventPublisher>();
+        _handler = new CreateUserHandler(_userRepository, _unitOfWork, _mapper, _passwordHasher, _eventPublisher);
     }
 
     /// <summary>

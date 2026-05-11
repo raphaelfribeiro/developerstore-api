@@ -32,6 +32,21 @@ public interface IUserRepository
     Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Retrieves a user by their username
+    /// </summary>
+    Task<User?> GetByUsernameAsync(string username, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Returns an IQueryable of all users for flexible pagination and filtering
+    /// </summary>
+    IQueryable<User> GetAllQueryable();
+
+    /// <summary>
+    /// Updates an existing user in the repository
+    /// </summary>
+    Task<User> UpdateAsync(User user, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Deletes a user from the repository
     /// </summary>
     /// <param name="id">The unique identifier of the user to delete</param>

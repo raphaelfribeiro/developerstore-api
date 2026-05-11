@@ -29,7 +29,6 @@ public class UserRepository : IUserRepository
     public async Task<User> CreateAsync(User user, CancellationToken cancellationToken = default)
     {
         await _context.Users.AddAsync(user, cancellationToken);
-        await _context.SaveChangesAsync(cancellationToken);
         return user;
     }
 
@@ -57,6 +56,29 @@ public class UserRepository : IUserRepository
     }
 
     /// <summary>
+    /// Retrieves a user by their username
+    /// </summary>
+    public async Task<User?> GetByUsernameAsync(string username, CancellationToken cancellationToken = default)
+    {
+        return await _context.Users
+            .FirstOrDefaultAsync(u => u.Username == username, cancellationToken);
+    }
+
+    /// <summary>
+    /// Returns an IQueryable of all users for flexible pagination and filtering
+    /// </summary>
+    public IQueryable<User> GetAllQueryable() => _context.Users.AsNoTracking().AsQueryable();
+
+    /// <summary>
+    /// Updates an existing user in the database
+    /// </summary>
+    public async Task<User> UpdateAsync(User user, CancellationToken cancellationToken = default)
+    {
+        _context.Users.Update(user);
+        return user;
+    }
+
+    /// <summary>
     /// Deletes a user from the database
     /// </summary>
     /// <param name="id">The unique identifier of the user to delete</param>
@@ -65,11 +87,9 @@ public class UserRepository : IUserRepository
     public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var user = await GetByIdAsync(id, cancellationToken);
-        if (user == null)
-            return false;
+        if (user is null) return false;
 
         _context.Users.Remove(user);
-        await _context.SaveChangesAsync(cancellationToken);
         return true;
     }
 }

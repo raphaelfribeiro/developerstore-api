@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  ambev.developerevaluation.webapi:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ConnectionStrings__DefaultConnection=Host=ambev.developerevaluation.database;Port=5432;Database=${POSTGRES_DB:-developer_evaluation};Username=${POSTGRES_USER:-developer};Password=${POSTGRES_PASSWORD:-ev@luAt10n}
+      - Jwt__SecretKey=${JWT_SECRET_KEY:-YourSuperSecretKeyForJwtTokenGenerationThatShouldBeAtLeast32BytesLong}
+      - Jwt__Issuer=${JWT_ISSUER:-AmbevDeveloperEvaluation}
+      - Jwt__Audience=${JWT_AUDIENCE:-AmbevDeveloperEvaluationUsers}
+      - Jwt__ExpiryMinutes=${JWT_EXPIRY_MINUTES:-60}
+      - MongoDB__ConnectionString=mongodb://${MONGO_USER:-developer}:${MONGO_PASSWORD:-ev%40luAt10n}@ambev.developerevaluation.nosql:27017
+      - MongoDB__DatabaseName=${MONGO_DB:-developer_evaluation}
+      - MongoDB__EventsCollectionName=${MONGO_EVENTS_COLLECTION:-domain_events}
+      - RabbitMq__ConnectionString=amqp://${RABBITMQ_USER:-developer}:${RABBITMQ_PASSWORD:-ev%40luAt10n}@ambev.developerevaluation.rabbitmq:5672
+    ports:
+      - "8080:8080"
+    depends_on:
+      ambev.developerevaluation.database:
+        condition: service_healthy
+      ambev.developerevaluation.nosql:
+        condition: service_healthy
+      ambev.developerevaluation.rabbitmq:
+        condition: service_healthy
+
+  ambev.developerevaluation.database:
+    ports:
+      - "5432:5432"
+
+  ambev.developerevaluation.nosql:
+    ports:
+      - "27017:27017"
+
+  ambev.developerevaluation.rabbitmq:
+    ports:
+      - "5672:5672"
+      - "15672:15672"

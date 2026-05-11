@@ -1,19 +1,39 @@
 using AutoMapper;
 using Ambev.DeveloperEvaluation.Application.Users.CreateUser;
+using Ambev.DeveloperEvaluation.WebApi.Features.Users.Shared;
 
 namespace Ambev.DeveloperEvaluation.WebApi.Features.Users.CreateUser;
 
-/// <summary>
-/// Profile for mapping between Application and API CreateUser responses
-/// </summary>
 public class CreateUserProfile : Profile
 {
-    /// <summary>
-    /// Initializes the mappings for CreateUser feature
-    /// </summary>
     public CreateUserProfile()
     {
-        CreateMap<CreateUserRequest, CreateUserCommand>();
-        CreateMap<CreateUserResult, CreateUserResponse>();
+        CreateMap<CreateUserRequest, CreateUserCommand>()
+            .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.Name.Firstname))
+            .ForMember(dest => dest.LastName,  opt => opt.MapFrom(src => src.Name.Lastname))
+            .ForMember(dest => dest.City,      opt => opt.MapFrom(src => src.Address.City))
+            .ForMember(dest => dest.Street,    opt => opt.MapFrom(src => src.Address.Street))
+            .ForMember(dest => dest.Number,    opt => opt.MapFrom(src => src.Address.Number))
+            .ForMember(dest => dest.ZipCode,   opt => opt.MapFrom(src => src.Address.Zipcode))
+            .ForMember(dest => dest.GeoLat,    opt => opt.MapFrom(src => src.Address.Geolocation.Lat))
+            .ForMember(dest => dest.GeoLong,   opt => opt.MapFrom(src => src.Address.Geolocation.Long));
+
+        CreateMap<CreateUserResult, CreateUserResponse>()
+            .ForMember(dest => dest.Status,  opt => opt.MapFrom(src => src.Status.ToString()))
+            .ForMember(dest => dest.Role,    opt => opt.MapFrom(src => src.Role.ToString()))
+            .ForMember(dest => dest.Password, opt => opt.Ignore())
+            .ForMember(dest => dest.Name,    opt => opt.MapFrom(src => new UserNameDto
+            {
+                Firstname = src.FirstName,
+                Lastname  = src.LastName
+            }))
+            .ForMember(dest => dest.Address, opt => opt.MapFrom(src => new UserAddressDto
+            {
+                City    = src.City,
+                Street  = src.Street,
+                Number  = src.Number,
+                Zipcode = src.ZipCode,
+                Geolocation = new UserGeolocationDto { Lat = src.GeoLat, Long = src.GeoLong }
+            }));
     }
 }

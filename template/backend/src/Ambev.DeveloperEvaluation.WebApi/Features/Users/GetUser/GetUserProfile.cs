@@ -1,18 +1,32 @@
 using AutoMapper;
+using Ambev.DeveloperEvaluation.Application.Users.GetUser;
+using Ambev.DeveloperEvaluation.WebApi.Features.Users.Shared;
 
 namespace Ambev.DeveloperEvaluation.WebApi.Features.Users.GetUser;
 
-/// <summary>
-/// Profile for mapping GetUser feature requests to commands
-/// </summary>
 public class GetUserProfile : Profile
 {
-    /// <summary>
-    /// Initializes the mappings for GetUser feature
-    /// </summary>
     public GetUserProfile()
     {
-        CreateMap<Guid, Application.Users.GetUser.GetUserCommand>()
-            .ConstructUsing(id => new Application.Users.GetUser.GetUserCommand(id));
+        CreateMap<Guid, GetUserCommand>()
+            .ConstructUsing(id => new GetUserCommand(id));
+
+        CreateMap<GetUserResult, GetUserResponse>()
+            .ForMember(dest => dest.Status,  opt => opt.MapFrom(src => src.Status.ToString()))
+            .ForMember(dest => dest.Role,    opt => opt.MapFrom(src => src.Role.ToString()))
+            .ForMember(dest => dest.Password, opt => opt.Ignore())
+            .ForMember(dest => dest.Name,    opt => opt.MapFrom(src => new UserNameDto
+            {
+                Firstname = src.FirstName,
+                Lastname  = src.LastName
+            }))
+            .ForMember(dest => dest.Address, opt => opt.MapFrom(src => new UserAddressDto
+            {
+                City    = src.City,
+                Street  = src.Street,
+                Number  = src.Number,
+                Zipcode = src.ZipCode,
+                Geolocation = new UserGeolocationDto { Lat = src.GeoLat, Long = src.GeoLong }
+            }));
     }
 }

@@ -1,0 +1,100 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  build-and-test:
+    name: Build, Test & Coverage
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: template/backend
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+      DOTNET_NOLOGO: 1
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore Ambev.DeveloperEvaluation.sln
+
+      - name: Build
+        run: dotnet build Ambev.DeveloperEvaluation.sln --configuration Release --no-restore
+
+      - name: Unit tests
+        run: |
+          dotnet test Ambev.DeveloperEvaluation.sln \
+            --configuration Release --no-build \
+            --filter "FullyQualifiedName~Unit" \
+            --collect:"XPlat Code Coverage" \
+            --results-directory coverage-results \
+            -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura \
+               DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Include="[Ambev.DeveloperEvaluation.Domain]*,[Ambev.DeveloperEvaluation.Application]*"
+
+      - name: Integration tests
+        run: |
+          dotnet test Ambev.DeveloperEvaluation.sln \
+            --configuration Release --no-build \
+            --filter "FullyQualifiedName~Integration"
+
+      - name: Functional tests
+        run: |
+          dotnet test Ambev.DeveloperEvaluation.sln \
+            --configuration Release --no-build \
+            --filter "FullyQualifiedName~Functional"
+
+      - name: Install ReportGenerator
+        run: dotnet tool update --global dotnet-reportgenerator-globaltool
+
+      - name: Generate coverage report
+        run: |
+          reportgenerator \
+            -reports:"coverage-results/**/*.cobertura.xml" \
+            -targetdir:coverage-report \
+            -reporttypes:"Html;TextSummary" \
+            "-assemblyfilters:+Ambev.DeveloperEvaluation.Domain;+Ambev.DeveloperEvaluation.Application"
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: template/backend/coverage-report
+          retention-days: 30
+
+  docker:
+    name: Docker Build & Push
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    env:
+      DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKER_REPOSITORY: ${{ secrets.DOCKER_REPOSITORY }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -f template/backend/Dockerfile template/backend -t developerstore:ci
+
+      - name: Push to registry
+        if: github.ref == 'refs/heads/main' && env.DOCKER_REGISTRY != ''
+        run: |
+          echo "$DOCKER_PASSWORD" | docker login "$DOCKER_REGISTRY" -u "$DOCKER_USERNAME" --password-stdin
+          docker tag developerstore:ci "$DOCKER_REGISTRY/$DOCKER_REPOSITORY:${{ github.sha }}"
+          docker tag developerstore:ci "$DOCKER_REGISTRY/$DOCKER_REPOSITORY:latest"
+          docker push "$DOCKER_REGISTRY/$DOCKER_REPOSITORY:${{ github.sha }}"
+          docker push "$DOCKER_REGISTRY/$DOCKER_REPOSITORY:latest"

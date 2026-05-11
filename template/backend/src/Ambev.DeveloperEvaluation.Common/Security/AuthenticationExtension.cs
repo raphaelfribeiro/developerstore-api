@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
-using System;
 using System.Text;
 
 namespace Ambev.DeveloperEvaluation.Common.Security
@@ -15,6 +14,11 @@ namespace Ambev.DeveloperEvaluation.Common.Security
 
             var secretKey = configuration["Jwt:SecretKey"]?.ToString();
             ArgumentException.ThrowIfNullOrWhiteSpace(secretKey);
+
+            if (secretKey.Length < 32)
+                throw new ArgumentException(
+                    "Jwt:SecretKey must be at least 32 characters (256 bits) as required by HS256.",
+                    nameof(secretKey));
 
             var key = Encoding.ASCII.GetBytes(secretKey);
 
@@ -31,13 +35,13 @@ namespace Ambev.DeveloperEvaluation.Common.Security
                 {
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(key),
-                    ValidateIssuer = false,
-                    ValidateAudience = false,
+                    ValidateIssuer = true,
+                    ValidIssuer = configuration["Jwt:Issuer"],
+                    ValidateAudience = true,
+                    ValidAudience = configuration["Jwt:Audience"],
                     ClockSkew = TimeSpan.Zero
                 };
             });
-
-            services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 
             return services;
         }
