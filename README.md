@@ -56,7 +56,7 @@ O **DeveloperStore API** é uma API RESTful completa para gestão de um sistema 
 - **Eventos de domínio** publicados a cada operação relevante
 - **Autenticação JWT** em todos os endpoints protegidos
 - **Paginação e filtros** em todos os endpoints de listagem
-- **~91% de cobertura** nos testes unitários (214 testes)
+- **~91% de cobertura** nos testes unitários (219 testes)
 
 ---
 
@@ -91,6 +91,8 @@ O **DeveloperStore API** é uma API RESTful completa para gestão de um sistema 
 | ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=flat&logo=docker) | - | Containerização |
 | ![Redis](https://img.shields.io/badge/Redis-7.4-DC382D?style=flat&logo=redis&logoColor=white) | 7.4 | Cache |
 | ![MongoDB](https://img.shields.io/badge/MongoDB-8.0-47A248?style=flat&logo=mongodb&logoColor=white) | 8.0 | NoSQL (event store) |
+| ![RabbitMQ](https://img.shields.io/badge/RabbitMQ-3.13-FF6600?style=flat&logo=rabbitmq&logoColor=white) | 3.13 | Message broker (Rebus transport) |
+| ![Rebus](https://img.shields.io/badge/Rebus-8.9-512BD4?style=flat&logo=dotnet&logoColor=white) | 8.9 | Service bus — publicação e consumo de domain events |
 | ![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-CI/CD-2088FF?style=flat&logo=githubactions&logoColor=white) | - | Build, testes, cobertura e push de imagem Docker |
 
 ---
@@ -108,8 +110,8 @@ src/
 └── Ambev.DeveloperEvaluation.Common        # Utilitários compartilhados
 
 tests/
-├── Ambev.DeveloperEvaluation.Unit          # Testes unitários (~91% cobertura, 214 testes)
-├── Ambev.DeveloperEvaluation.Integration   # Testes de integração com Testcontainers
+├── Ambev.DeveloperEvaluation.Unit          # Testes unitários (~91% cobertura, 219 testes)
+├── Ambev.DeveloperEvaluation.Integration   # Testes de integração com Testcontainers (41 testes)
 └── Ambev.DeveloperEvaluation.Functional    # Testes funcionais
 ```
 
@@ -132,7 +134,8 @@ Repository  (ORM)        Domain Events
      │                         │
      ▼                         ▼
 EF Core → PostgreSQL    EventPublisher
-                          (Polly retry 3×)
+                    MongoEventPublisher (decorator)
+                          → Rebus → RabbitMQ
 ```
 
 ### Padrões utilizados
@@ -494,7 +497,8 @@ template/backend/
 │   │   └── Auth/              # AuthenticateUser (login por username)
 │   ├── Ambev.DeveloperEvaluation.ORM/
 │   │   ├── Repositories/      # SaleRepository, CartRepository, ProductRepository
-│   │   ├── Services/          # LoggingEventPublisher (Polly retry), MongoEventPublisher (Decorator), DomainEventDocument, MongoDbSettings, MongoDbExtensions
+│   │   ├── Services/          # RebusEventPublisher, RebusExtensions, LoggingEventPublisher (Polly retry), MongoEventPublisher (Decorator), DomainEventDocument, MongoDbSettings, MongoDbExtensions
+│   │   ├── Services/Messaging # SaleCreatedEventHandler, SaleModifiedEventHandler, SaleCancelledEventHandler, ItemCancelledEventHandler (Rebus IHandleMessages)
 │   │   └── Migrations/        # InitialMigrations, AddSaleCartProduct, AddUserProfileFields
 │   └── Ambev.DeveloperEvaluation.WebApi/
 │       ├── Features/          # Controllers, Requests, Responses, Profiles
@@ -503,10 +507,10 @@ template/backend/
     ├── Ambev.DeveloperEvaluation.Unit/
     │   ├── Domain/            # Entity tests, Validator tests, Event tests
     │   ├── Application/       # Handler tests, Mapping tests
-    │   └── Infrastructure/    # LoggingEventPublisher tests, MongoEventPublisher tests
+    │   └── Infrastructure/    # LoggingEventPublisher tests, MongoEventPublisher tests, RebusEventPublisher tests
     ├── Ambev.DeveloperEvaluation.Integration/
     │   ├── Fixtures/          # IntegrationTestFactory (Testcontainers), BaseIntegrationTest
-    │   └── Features/          # Auth, Users, Products, Sales, Carts, E2E — 40 testes
+    │   └── Features/          # Auth, Users, Products, Sales, Carts, E2E — 41 testes
     └── Ambev.DeveloperEvaluation.Functional/
         ├── Fixtures/          # FunctionalTestFactory (container isolado), BaseFunctionalTest
         └── Scenarios/         # SalesBusinessRulesTests — 3 cenários de negócio
@@ -520,7 +524,7 @@ O que seria evoluído com mais tempo:
 
 | Item | Descrição |
 |---|---|
-| **Message Broker real** | Substituir o `LoggingEventPublisher` por integração com RabbitMQ ou Azure Service Bus via Rebus, mantendo o Polly retry já implementado |
+| ~~**Message Broker real**~~ | ✅ Implementado: **Rebus 8.9 + RabbitMQ 3.13**. `RebusEventPublisher` é o inner publisher do decorator `MongoEventPublisher`. Em produção usa RabbitMQ (via `RabbitMq:ConnectionString`); em dev/testes usa transport InMemory automaticamente. Quatro `IHandleMessages<T>` handlers processam os eventos no mesmo processo. |
 | **Testes unitários de Cart** | Handlers e validators do domínio Cart cobertos da mesma forma que Sale e Product |
 | ~~**Testes funcionais**~~ | ✅ Implementado: `Ambev.DeveloperEvaluation.Functional` com 3 cenários de negócio (tiers de desconto, limite de quantidade, cancelamento de item) |
 | **API versioning** | Versionamento de rotas (`/api/v1/`) para suportar evolução sem quebrar clientes |
@@ -568,6 +572,7 @@ O que seria evoluído com mais tempo:
 | **Ownership check em `PUT /api/users/{id}`** | OWASP A01:2021 — qualquer usuário autenticado poderia atualizar o perfil de outro. O controller extrai o GUID do `ClaimTypes.NameIdentifier` e retorna 403 se não for o dono nem Admin |
 | **`role` e `status` no body de `PUT /api/users/{id}` com guard no handler** | Spec exige esses campos no request body. O handler verifica: se o caller não for Admin e o valor enviado diferir do atual, lança `ForbiddenException` (403). Não-admins podem omitir ou repetir o valor atual sem restrição. Admins podem alterar livremente. Spec compliance ✅ + segurança ✅ |
 | **`PATCH /api/users/{id}/role` — admin only** | Endpoint dedicado com `[Authorize(Roles = "Admin")]` para administradores gerenciarem role e status de qualquer usuário sem precisar do endpoint de perfil |
+| **Rebus como message bus** | Framework obrigatório conforme `frameworks.md`. `RebusEventPublisher` implementa `IEventPublisher` e delega para `IBus.Publish`. O decorator `MongoEventPublisher` persiste no MongoDB e repassa ao Rebus, mantendo a clean architecture intacta. Transport: RabbitMQ em produção (configurado via `RabbitMq:ConnectionString`); InMemory automático em dev/testes (sem dependência de container). Quatro `IHandleMessages<T>` handlers fazem log estruturado dos eventos — extensíveis para qualquer processamento futuro. |
 | **GitFlow + Conventional Commits** | Critério explícito do desafio (spec overview, item #16). Feature branches criadas a partir de `develop`, merge com `--no-ff` para preservar histórico, prefixos semânticos (`feat:`, `fix:`, `test:`, `refactor:`, `chore:`, `docs:`). Histórico auditável e legível por ferramentas de changelog automatizado. |
 | **MongoDB como event store ativo** | Todos os eventos de domínio (`SaleCreatedEvent`, `SaleModifiedEvent`, `SaleCancelledEvent`, `ItemCancelledEvent`) são persistidos no MongoDB via `MongoEventPublisher` (padrão Decorator sobre `LoggingEventPublisher`). A escrita é best-effort: falha no MongoDB não bloqueia o fluxo — o evento ainda é logado via Serilog + Polly. Se `MongoDB:ConnectionString` estiver vazia (desenvolvimento local sem Docker), o decorator é suprimido e apenas o `LoggingEventPublisher` é registrado. |
 | **`AsNoTracking()` nas queries de listagem** | Aplicado em todos os `GetAllQueryable()` dos repositórios (`SaleRepository`, `CartRepository`, `ProductRepository`, `UserRepository`). Queries de leitura não precisam de change-tracking do EF Core — isso reduz alocação de memória e melhora performance. **Não aplicado** em `GetByIdAsync()` pois `DeleteAsync` chama esse método internamente e precisa de entidades rastreadas para cascade delete seguro. |

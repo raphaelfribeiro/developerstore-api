@@ -13,12 +13,15 @@ services:
       - MongoDB__ConnectionString=mongodb://${MONGO_USER:-developer}:${MONGO_PASSWORD:-ev%40luAt10n}@ambev.developerevaluation.nosql:27017
       - MongoDB__DatabaseName=${MONGO_DB:-developer_evaluation}
       - MongoDB__EventsCollectionName=${MONGO_EVENTS_COLLECTION:-domain_events}
+      - RabbitMq__ConnectionString=amqp://${RABBITMQ_USER:-developer}:${RABBITMQ_PASSWORD:-ev@luAt10n}@ambev.developerevaluation.rabbitmq:5672
     ports:
       - "8080:8080"
     depends_on:
       ambev.developerevaluation.database:
         condition: service_healthy
       ambev.developerevaluation.nosql:
+        condition: service_healthy
+      ambev.developerevaluation.rabbitmq:
         condition: service_healthy
 
   ambev.developerevaluation.database:
@@ -32,3 +35,8 @@ services:
   ambev.developerevaluation.cache:
     ports:
       - "6379:6379"
+
+  ambev.developerevaluation.rabbitmq:
+    ports:
+      - "5672:5672"
+      - "15672:15672"

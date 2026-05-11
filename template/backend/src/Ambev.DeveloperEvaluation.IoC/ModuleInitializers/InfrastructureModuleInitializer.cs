@@ -30,14 +30,16 @@ public class InfrastructureModuleInitializer : IModuleInitializer
         // Product
         builder.Services.AddScoped<IProductRepository, ProductRepository>();
 
-        // Always register LoggingEventPublisher as a concrete singleton (Serilog + Polly retry).
-        // MongoEventPublisher wraps it when MongoDB is configured.
-        builder.Services.AddSingleton<LoggingEventPublisher>();
+        // Set up Rebus service bus (RabbitMQ when configured, InMemory otherwise).
+        builder.AddRebusMessaging();
+
+        // Register RebusEventPublisher as a concrete singleton so MongoEventPublisher can wrap it.
+        builder.Services.AddSingleton<RebusEventPublisher>();
 
         // Register IEventPublisher: MongoDB-backed decorator when a connection string is present,
-        // Serilog-only fallback otherwise.
+        // Rebus-only fallback otherwise.
         if (!builder.AddMongoEventStore())
             builder.Services.AddSingleton<IEventPublisher>(sp =>
-                sp.GetRequiredService<LoggingEventPublisher>());
+                sp.GetRequiredService<RebusEventPublisher>());
     }
 }

@@ -45,7 +45,7 @@ public static class MongoDbExtensions
         });
 
         builder.Services.AddSingleton<IEventPublisher>(provider => new MongoEventPublisher(
-            provider.GetRequiredService<LoggingEventPublisher>(),
+            provider.GetRequiredService<RebusEventPublisher>(),
             provider.GetRequiredService<IMongoCollection<DomainEventDocument>>(),
             provider.GetRequiredService<ILogger<MongoEventPublisher>>()));
 

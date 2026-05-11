@@ -54,3 +54,20 @@ services:
     command: redis-server --requirepass ${REDIS_PASSWORD:-ev@luAt10n}
     ports:
       - "6379"
+
+  ambev.developerevaluation.rabbitmq:
+    container_name: ambev_developer_evaluation_rabbitmq
+    image: rabbitmq:3.13-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-developer}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-ev@luAt10n}
+    ports:
+      - "5672"
+      - "15672"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
