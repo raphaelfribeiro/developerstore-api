@@ -110,6 +110,28 @@ tests/
 └── Ambev.DeveloperEvaluation.Functional    # Testes funcionais
 ```
 
+### Fluxo de uma requisição
+
+```
+HTTP Request
+     │
+     ▼
+Controller  (WebApi)
+     │
+     ▼
+MediatR  →  Command / Query
+     │
+     ▼
+Handler  (Application)
+     │                         │  (operações de escrita)
+     ▼                         ▼
+Repository  (ORM)        Domain Events
+     │                         │
+     ▼                         ▼
+EF Core → PostgreSQL    EventPublisher
+                          (Polly retry 3×)
+```
+
 ### Padrões utilizados
 
 | Padrão | Implementação |
@@ -120,6 +142,8 @@ tests/
 | **Specification Pattern** | `ActiveUserSpecification` |
 | **External Identity** | Cart referencia Product apenas pelo Id (domínios desacoplados) |
 | **Retry Pattern** | Polly com 3 tentativas e exponential backoff nos eventos |
+| **GitFlow** | Feature branches a partir de `develop`; merge `--no-ff`; tipos: `feature/`, `fix/`, `docs/`, `refactor/`, `chore/` |
+| **Conventional Commits** | Prefixos semânticos: `feat:`, `fix:`, `test:`, `refactor:`, `chore:`, `docs:` — histórico auditável e compatível com ferramentas de changelog |
 
 ---
 
@@ -157,6 +181,7 @@ tests/
 ```bash
 git clone https://github.com/raphaelfernandesribeiro/desafio-tecnico.git
 cd desafio-tecnico/template/backend
+# O código-fonte está em template/backend — estrutura pré-configurada fornecida pelo desafio
 ```
 
 ### 2. Suba os containers
@@ -164,6 +189,8 @@ cd desafio-tecnico/template/backend
 ```bash
 docker-compose up --build -d
 ```
+
+> As migrations do EF Core são aplicadas automaticamente no startup — nenhum comando `dotnet ef database update` é necessário.
 
 | Serviço | URL |
 |---|---|
@@ -286,11 +313,10 @@ docker-compose up --build -d
 }
 ```
 
-### Paginação
+### Paginação e Ordenação
 
 Parâmetros de query com prefixo `_`:
-- `_page` (padrão: 1), `_size` (padrão: 10), `_order` (ex: `username desc`)
-- Filtros adicionais: `_minPrice`, `_maxPrice` (Products), `_minDate`, `_maxDate` (Carts, Sales)
+- `_page` (padrão: 1), `_size` (padrão: 10), `_order` (ex: `username desc, email asc`)
 
 ```json
 {
@@ -301,9 +327,38 @@ Parâmetros de query com prefixo `_`:
 }
 ```
 
+### Filtros
+
+Os endpoints de listagem suportam três tipos de filtro, combináveis com `&` (AND):
+
+**Valor exato por campo**
+```
+GET /api/products?category=electronics
+```
+
+**Correspondência parcial — wildcard `*`**
+```
+GET /api/products?title=Samsung*        # começa com
+GET /api/products?category=*clothing    # termina com
+```
+
+**Faixa numérica e de data — prefixos `_min` / `_max`**
+```
+GET /api/products?_minPrice=50&_maxPrice=200
+GET /api/carts?_minDate=2024-01-01&_maxDate=2024-12-31
+GET /api/sales?_minDate=2024-06-01
+```
+
+**Exemplo combinado**
+```
+GET /api/products?category=electronics&_minPrice=100&title=Samsung*
+```
+
 ---
 
 ## Testes
+
+> **Estratégia:** Testes de **integração** verificam endpoints HTTP completos com banco real (Testcontainers) — validam contrato da API, autenticação e regras de negócio via HTTP. Testes **funcionais** rodam num container PostgreSQL **isolado** (sem estado compartilhado com integração) e focam exclusivamente nas regras de negócio críticas do domínio (tiers de desconto, limites de quantidade, cancelamento de item), garantindo que mudanças no código nunca quebrem a lógica central independentemente de detalhes de transporte.
 
 ### Testes Unitários
 
@@ -476,6 +531,8 @@ O que seria evoluído com mais tempo:
 | **Ownership check em `PUT /api/users/{id}`** | OWASP A01:2021 — qualquer usuário autenticado poderia atualizar o perfil de outro. O controller extrai o GUID do `ClaimTypes.NameIdentifier` e retorna 403 se não for o dono nem Admin |
 | **`role` e `status` no body de `PUT /api/users/{id}` com guard no handler** | Spec exige esses campos no request body. O handler verifica: se o caller não for Admin e o valor enviado diferir do atual, lança `ForbiddenException` (403). Não-admins podem omitir ou repetir o valor atual sem restrição. Admins podem alterar livremente. Spec compliance ✅ + segurança ✅ |
 | **`PATCH /api/users/{id}/role` — admin only** | Endpoint dedicado com `[Authorize(Roles = "Admin")]` para administradores gerenciarem role e status de qualquer usuário sem precisar do endpoint de perfil |
+| **GitFlow + Conventional Commits** | Critério explícito do desafio (spec overview, item #16). Feature branches criadas a partir de `develop`, merge com `--no-ff` para preservar histórico, prefixos semânticos (`feat:`, `fix:`, `test:`, `refactor:`, `chore:`, `docs:`). Histórico auditável e legível por ferramentas de changelog automatizado. |
+| **MongoDB provisionado, sem integração ativa** | Presente no `docker-compose` conforme especificado no tech stack do desafio. Não há repositório ativo apontando para ele na versão atual — o PostgreSQL via EF Core cobre todos os casos de uso implementados. Reservado para evoluções futuras: auditoria de eventos, catálogo de produtos desnormalizado, ou log de domínio. |
 
 ---
 
