@@ -54,7 +54,7 @@ O **DeveloperStore API** é uma API RESTful completa para gestão de um sistema 
 - **Eventos de domínio** publicados a cada operação relevante
 - **Autenticação JWT** em todos os endpoints protegidos
 - **Paginação e filtros** em todos os endpoints de listagem
-- **~91% de cobertura** nos testes unitários (208 testes)
+- **~91% de cobertura** nos testes unitários (214 testes)
 
 ---
 
@@ -105,7 +105,7 @@ src/
 └── Ambev.DeveloperEvaluation.Common        # Utilitários compartilhados
 
 tests/
-├── Ambev.DeveloperEvaluation.Unit          # Testes unitários (~91% cobertura, 208 testes)
+├── Ambev.DeveloperEvaluation.Unit          # Testes unitários (~91% cobertura, 214 testes)
 ├── Ambev.DeveloperEvaluation.Integration   # Testes de integração com Testcontainers
 └── Ambev.DeveloperEvaluation.Functional    # Testes funcionais
 ```
@@ -370,7 +370,7 @@ dotnet test Ambev.DeveloperEvaluation.sln --filter "FullyQualifiedName~Unit"
 <div align="center">
 
 ![Coverage](https://img.shields.io/badge/Line_Coverage-91%25-brightgreen?style=for-the-badge)
-![Tests](https://img.shields.io/badge/Tests-208_passing-brightgreen?style=for-the-badge)
+![Tests](https://img.shields.io/badge/Tests-214_passing-brightgreen?style=for-the-badge)
 ![Failures](https://img.shields.io/badge/Failures-0-brightgreen?style=for-the-badge)
 
 </div>
@@ -457,7 +457,7 @@ template/backend/
 │   │   └── Auth/              # AuthenticateUser (login por username)
 │   ├── Ambev.DeveloperEvaluation.ORM/
 │   │   ├── Repositories/      # SaleRepository, CartRepository, ProductRepository
-│   │   ├── Services/          # LoggingEventPublisher (Polly retry)
+│   │   ├── Services/          # LoggingEventPublisher (Polly retry), MongoEventPublisher (Decorator), DomainEventDocument, MongoDbSettings, MongoDbExtensions
 │   │   └── Migrations/        # InitialMigrations, AddSaleCartProduct, AddUserProfileFields
 │   └── Ambev.DeveloperEvaluation.WebApi/
 │       ├── Features/          # Controllers, Requests, Responses, Profiles
@@ -466,7 +466,7 @@ template/backend/
     ├── Ambev.DeveloperEvaluation.Unit/
     │   ├── Domain/            # Entity tests, Validator tests, Event tests
     │   ├── Application/       # Handler tests, Mapping tests
-    │   └── Infrastructure/    # LoggingEventPublisher tests
+    │   └── Infrastructure/    # LoggingEventPublisher tests, MongoEventPublisher tests
     ├── Ambev.DeveloperEvaluation.Integration/
     │   ├── Fixtures/          # IntegrationTestFactory (Testcontainers), BaseIntegrationTest
     │   └── Features/          # Auth, Users, Products, Sales, Carts, E2E — 40 testes
@@ -532,7 +532,8 @@ O que seria evoluído com mais tempo:
 | **`role` e `status` no body de `PUT /api/users/{id}` com guard no handler** | Spec exige esses campos no request body. O handler verifica: se o caller não for Admin e o valor enviado diferir do atual, lança `ForbiddenException` (403). Não-admins podem omitir ou repetir o valor atual sem restrição. Admins podem alterar livremente. Spec compliance ✅ + segurança ✅ |
 | **`PATCH /api/users/{id}/role` — admin only** | Endpoint dedicado com `[Authorize(Roles = "Admin")]` para administradores gerenciarem role e status de qualquer usuário sem precisar do endpoint de perfil |
 | **GitFlow + Conventional Commits** | Critério explícito do desafio (spec overview, item #16). Feature branches criadas a partir de `develop`, merge com `--no-ff` para preservar histórico, prefixos semânticos (`feat:`, `fix:`, `test:`, `refactor:`, `chore:`, `docs:`). Histórico auditável e legível por ferramentas de changelog automatizado. |
-| **MongoDB provisionado, sem integração ativa** | Presente no `docker-compose` conforme especificado no tech stack do desafio. Não há repositório ativo apontando para ele na versão atual — o PostgreSQL via EF Core cobre todos os casos de uso implementados. Reservado para evoluções futuras: auditoria de eventos, catálogo de produtos desnormalizado, ou log de domínio. |
+| **MongoDB como event store ativo** | Todos os eventos de domínio (`SaleCreatedEvent`, `SaleModifiedEvent`, `SaleCancelledEvent`, `ItemCancelledEvent`) são persistidos no MongoDB via `MongoEventPublisher` (padrão Decorator sobre `LoggingEventPublisher`). A escrita é best-effort: falha no MongoDB não bloqueia o fluxo — o evento ainda é logado via Serilog + Polly. Se `MongoDB:ConnectionString` estiver vazia (desenvolvimento local sem Docker), o decorator é suprimido e apenas o `LoggingEventPublisher` é registrado. |
+| **`AsNoTracking()` nas queries de listagem** | Aplicado em todos os `GetAllQueryable()` dos repositórios (`SaleRepository`, `CartRepository`, `ProductRepository`, `UserRepository`). Queries de leitura não precisam de change-tracking do EF Core — isso reduz alocação de memória e melhora performance. **Não aplicado** em `GetByIdAsync()` pois `DeleteAsync` chama esse método internamente e precisa de entidades rastreadas para cascade delete seguro. |
 
 ---
 

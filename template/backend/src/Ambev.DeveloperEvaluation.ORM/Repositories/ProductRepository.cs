@@ -34,13 +34,16 @@ public class ProductRepository : IProductRepository
     /// <inheritdoc/>
     public IQueryable<Product> GetAllQueryable()
     {
-        return _context.Products.AsQueryable();
+        return _context.Products
+            .AsNoTracking()
+            .AsQueryable();
     }
 
     /// <inheritdoc/>
     public IQueryable<Product> GetByCategoryQueryable(string category)
     {
         return _context.Products
+            .AsNoTracking()
             .Where(p => p.Category.ToLower() == category.ToLower())
             .AsQueryable();
     }
@@ -49,6 +52,7 @@ public class ProductRepository : IProductRepository
     public async Task<IEnumerable<string>> GetCategoriesAsync(CancellationToken cancellationToken = default)
     {
         return await _context.Products
+            .AsNoTracking()
             .Select(p => p.Category)
             .Distinct()
             .OrderBy(c => c)

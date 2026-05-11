@@ -37,6 +37,7 @@ public class CartRepository : ICartRepository
     {
         return _context.Carts
             .Include(c => c.Items)
+            .AsNoTracking()
             .AsQueryable();
     }
 

@@ -27,7 +27,14 @@ public class InfrastructureModuleInitializer : IModuleInitializer
         // Product
         builder.Services.AddScoped<IProductRepository, ProductRepository>();
 
-        // Event publisher with Polly retry (logs events via Serilog)
-        builder.Services.AddSingleton<IEventPublisher, LoggingEventPublisher>();
+        // Always register LoggingEventPublisher as a concrete singleton (Serilog + Polly retry).
+        // MongoEventPublisher wraps it when MongoDB is configured.
+        builder.Services.AddSingleton<LoggingEventPublisher>();
+
+        // Register IEventPublisher: MongoDB-backed decorator when a connection string is present,
+        // Serilog-only fallback otherwise.
+        if (!builder.AddMongoEventStore())
+            builder.Services.AddSingleton<IEventPublisher>(sp =>
+                sp.GetRequiredService<LoggingEventPublisher>());
     }
 }
