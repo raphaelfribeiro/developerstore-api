@@ -99,6 +99,7 @@ namespace Ambev.DeveloperEvaluation.WebApi.Middleware
             {
                 StatusCodes.Status404NotFound    => ("ResourceNotFound", "Resource not found"),
                 StatusCodes.Status401Unauthorized => ("AuthenticationError", "Unauthorized"),
+                StatusCodes.Status403Forbidden   => ("ForbiddenError", "Access denied"),
                 StatusCodes.Status409Conflict    => ("Conflict", "Conflict"),
                 StatusCodes.Status400BadRequest  => ("InvalidRequest", "Invalid request"),
                 _                                => ("InternalError", "An unexpected error occurred")

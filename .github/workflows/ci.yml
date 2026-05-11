@@ -1,0 +1,105 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: template/backend
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore Ambev.DeveloperEvaluation.sln
+
+      - name: Build solution
+        run: dotnet build Ambev.DeveloperEvaluation.sln --configuration Release --no-restore
+
+      - name: Run unit tests
+        run: |
+          dotnet test tests/Ambev.DeveloperEvaluation.Unit/Ambev.DeveloperEvaluation.Unit.csproj \
+            --configuration Release --no-restore \
+            /p:CollectCoverage=true \
+            /p:CoverletOutput=TestResults/Unit/coverage.xml \
+            /p:CoverletOutputFormat=cobertura
+
+      - name: Run integration tests
+        run: |
+          dotnet test tests/Ambev.DeveloperEvaluation.Integration/Ambev.DeveloperEvaluation.Integration.csproj \
+            --configuration Release --no-restore \
+            /p:CollectCoverage=true \
+            /p:CoverletOutput=TestResults/Integration/coverage.xml \
+            /p:CoverletOutputFormat=cobertura
+
+      - name: Run functional tests
+        run: |
+          dotnet test tests/Ambev.DeveloperEvaluation.Functional/Ambev.DeveloperEvaluation.Functional.csproj \
+            --configuration Release --no-restore \
+            /p:CollectCoverage=true \
+            /p:CoverletOutput=TestResults/Functional/coverage.xml \
+            /p:CoverletOutputFormat=cobertura
+
+      - name: Generate coverage report
+        run: |
+          dotnet tool install --global dotnet-reportgenerator-globaltool --version 5.5.9
+          reportgenerator \
+            -reports:TestResults/*/coverage.xml \
+            -targetdir:coverage-report \
+            -reporttypes:HtmlInline_AzurePipelines
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: template/backend/coverage-report
+
+  docker:
+    needs: build
+    if: |
+      github.ref == 'refs/heads/main' &&
+      github.event_name == 'push' &&
+      secrets.DOCKER_USERNAME &&
+      secrets.DOCKER_PASSWORD &&
+      secrets.DOCKER_REGISTRY &&
+      secrets.DOCKER_REPOSITORY
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Login to registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.DOCKER_REGISTRY }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: template/backend
+          file: template/backend/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_REGISTRY }}/${{ secrets.DOCKER_REPOSITORY }}:${{ github.sha }}
+            ${{ secrets.DOCKER_REGISTRY }}/${{ secrets.DOCKER_REPOSITORY }}:latest

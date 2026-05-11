@@ -421,7 +421,7 @@ O que seria evoluído com mais tempo:
 | ~~**Testes funcionais**~~ | ✅ Implementado: `Ambev.DeveloperEvaluation.Functional` com 3 cenários de negócio (tiers de desconto, limite de quantidade, cancelamento de item) |
 | **API versioning** | Versionamento de rotas (`/api/v1/`) para suportar evolução sem quebrar clientes |
 | **Rate limiting** | Throttling por IP/usuário nos endpoints públicos (auth, criação de usuário) |
-| **CI/CD pipeline** | GitHub Actions com build, testes, relatório de cobertura e push de imagem Docker |
+| **CI/CD pipeline** | GitHub Actions definido em `.github/workflows/ci.yml` com build, testes, relatório de cobertura e push de imagem Docker |
 
 ---
 
