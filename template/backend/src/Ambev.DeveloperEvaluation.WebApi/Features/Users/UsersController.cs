@@ -20,6 +20,10 @@ using Ambev.DeveloperEvaluation.Application.Common;
 
 namespace Ambev.DeveloperEvaluation.WebApi.Features.Users;
 
+/// <summary>
+/// Controller for managing user accounts.
+/// Handles user creation, retrieval, profile updates, role management, and deletion.
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 public class UsersController : BaseController
@@ -33,6 +37,12 @@ public class UsersController : BaseController
         _mapper = mapper;
     }
 
+    /// <summary>
+    /// Creates a new user account. No authentication required.
+    /// </summary>
+    /// <param name="request">User registration data including email, username, password, name, address and role.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The created user with its generated ID.</returns>
     [HttpPost]
     [ProducesResponseType(typeof(ApiResponseWithData<CreateUserResponse>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]
@@ -58,6 +68,14 @@ public class UsersController : BaseController
         });
     }
 
+    /// <summary>
+    /// Returns a paginated list of all users. Requires authentication.
+    /// </summary>
+    /// <param name="page">Page number (default: 1).</param>
+    /// <param name="size">Items per page (default: 10).</param>
+    /// <param name="order">Ordering expression, e.g. "username asc, email desc".</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Paginated list of users with total count and page metadata.</returns>
     [Authorize]
     [HttpGet]
     [ProducesResponseType(typeof(PaginatedResponse<GetUsersResponse>), StatusCodes.Status200OK)]
@@ -75,6 +93,12 @@ public class UsersController : BaseController
             mapped, result.TotalCount, result.CurrentPage, result.PageSize));
     }
 
+    /// <summary>
+    /// Returns a single user by ID. Requires authentication.
+    /// </summary>
+    /// <param name="id">The user's unique identifier (GUID).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Full user profile including name, address, role and status.</returns>
     [Authorize]
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(ApiResponseWithData<GetUserResponse>), StatusCodes.Status200OK)]
@@ -97,6 +121,16 @@ public class UsersController : BaseController
         return Ok(_mapper.Map<GetUserResponse>(response), "User retrieved successfully");
     }
 
+    /// <summary>
+    /// Updates a user's full profile. Requires authentication.
+    /// Only the account owner or an Admin can update a profile.
+    /// The <c>role</c> and <c>status</c> fields are accepted per spec but only Admins can change them;
+    /// non-admin callers who send a different value receive 403 Forbidden.
+    /// </summary>
+    /// <param name="id">The user's unique identifier (GUID).</param>
+    /// <param name="request">Updated profile data. Omit <c>role</c>/<c>status</c> to keep current values.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The updated user profile.</returns>
     [Authorize]
     [HttpPut("{id}")]
     [ProducesResponseType(typeof(ApiResponseWithData<UpdateUserResponse>), StatusCodes.Status200OK)]
@@ -130,6 +164,13 @@ public class UsersController : BaseController
         return Ok(_mapper.Map<UpdateUserResponse>(result), "User updated successfully");
     }
 
+    /// <summary>
+    /// Changes the role and status of any user. Restricted to Admin accounts only.
+    /// </summary>
+    /// <param name="id">The target user's unique identifier (GUID).</param>
+    /// <param name="request">New role and status values.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The user's updated role and status.</returns>
     [Authorize(Roles = "Admin")]
     [HttpPatch("{id}/role")]
     [ProducesResponseType(typeof(ApiResponseWithData<PatchUserRoleResponse>), StatusCodes.Status200OK)]
@@ -148,6 +189,12 @@ public class UsersController : BaseController
         return Ok(_mapper.Map<PatchUserRoleResponse>(result), "User role updated successfully");
     }
 
+    /// <summary>
+    /// Permanently deletes a user by ID. Requires authentication.
+    /// </summary>
+    /// <param name="id">The user's unique identifier (GUID).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Confirmation message on success.</returns>
     [Authorize]
     [HttpDelete("{id}")]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]

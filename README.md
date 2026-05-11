@@ -187,16 +187,28 @@ docker-compose down
 
 ### Variáveis de ambiente
 
-Todas as variáveis já estão configuradas no `docker-compose.override.yml`. Para sobrescrever, exporte antes de subir os containers:
+O projeto vem com valores padrão funcionais. Para personalizar, copie o arquivo de exemplo e edite conforme seu ambiente:
+
+```bash
+cp .env.example .env
+# edite .env com suas credenciais
+docker-compose up --build -d
+```
 
 | Variável | Padrão | Descrição |
 |---|---|---|
-| `ConnectionStrings__DefaultConnection` | `Host=ambev.developerevaluation.database;Port=5432;Database=developer_evaluation;Username=developer;Password=ev@luAt10n` | Connection string do PostgreSQL |
-| `Jwt__SecretKey` | `YourSuperSecretKey...` | Chave de assinatura do JWT (mín. 32 chars) |
-| `Jwt__Issuer` | `AmbevDeveloperEvaluation` | Issuer do token JWT |
-| `Jwt__ExpiryMinutes` | `60` | Validade do token em minutos |
-| `ASPNETCORE_ENVIRONMENT` | `Production` | Ambiente da aplicação |
-| `ASPNETCORE_HTTP_PORTS` | `8080` | Porta HTTP do Kestrel |
+| `POSTGRES_DB` | `developer_evaluation` | Nome do banco PostgreSQL |
+| `POSTGRES_USER` | `developer` | Usuário do PostgreSQL |
+| `POSTGRES_PASSWORD` | `ev@luAt10n` | Senha do PostgreSQL |
+| `MONGO_USER` | `developer` | Usuário do MongoDB |
+| `MONGO_PASSWORD` | `ev@luAt10n` | Senha do MongoDB |
+| `REDIS_PASSWORD` | `ev@luAt10n` | Senha do Redis |
+| `JWT_SECRET_KEY` | `YourSuperSecretKey...` | Chave de assinatura JWT (mín. 32 chars) ⚠️ |
+| `JWT_ISSUER` | `AmbevDeveloperEvaluation` | Issuer do token JWT |
+| `JWT_AUDIENCE` | `AmbevDeveloperEvaluationUsers` | Audience do token JWT |
+| `JWT_EXPIRY_MINUTES` | `60` | Validade do token em minutos |
+
+> ⚠️ **Produção:** Substitua `JWT_SECRET_KEY` por uma chave forte de pelo menos 32 caracteres gerada aleatoriamente. O app valida o tamanho mínimo na inicialização e rejeita chaves curtas.
 
 > Para rodar sem Docker, copie `appsettings.json`, ajuste `DefaultConnection` para `Host=localhost` e execute `dotnet run` na pasta `src/Ambev.DeveloperEvaluation.WebApi`.
 

@@ -5,7 +5,11 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_HTTP_PORTS=8080
-      - ConnectionStrings__DefaultConnection=Host=ambev.developerevaluation.database;Port=5432;Database=developer_evaluation;Username=developer;Password=ev@luAt10n
+      - ConnectionStrings__DefaultConnection=Host=ambev.developerevaluation.database;Port=5432;Database=${POSTGRES_DB:-developer_evaluation};Username=${POSTGRES_USER:-developer};Password=${POSTGRES_PASSWORD:-ev@luAt10n}
+      - Jwt__SecretKey=${JWT_SECRET_KEY:-YourSuperSecretKeyForJwtTokenGenerationThatShouldBeAtLeast32BytesLong}
+      - Jwt__Issuer=${JWT_ISSUER:-AmbevDeveloperEvaluation}
+      - Jwt__Audience=${JWT_AUDIENCE:-AmbevDeveloperEvaluationUsers}
+      - Jwt__ExpiryMinutes=${JWT_EXPIRY_MINUTES:-60}
     ports:
       - "8080:8080"
     depends_on:
