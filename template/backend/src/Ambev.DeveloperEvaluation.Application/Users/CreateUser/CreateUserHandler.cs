@@ -3,6 +3,7 @@ using MediatR;
 using FluentValidation;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
 using Ambev.DeveloperEvaluation.Domain.Entities;
+using Ambev.DeveloperEvaluation.Domain.Events;
 using Ambev.DeveloperEvaluation.Common.Security;
 
 namespace Ambev.DeveloperEvaluation.Application.Users.CreateUser;
@@ -16,13 +17,15 @@ public class CreateUserHandler : IRequestHandler<CreateUserCommand, CreateUserRe
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly IPasswordHasher _passwordHasher;
+    private readonly IEventPublisher _eventPublisher;
 
-    public CreateUserHandler(IUserRepository userRepository, IUnitOfWork unitOfWork, IMapper mapper, IPasswordHasher passwordHasher)
+    public CreateUserHandler(IUserRepository userRepository, IUnitOfWork unitOfWork, IMapper mapper, IPasswordHasher passwordHasher, IEventPublisher eventPublisher)
     {
         _userRepository = userRepository;
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _passwordHasher = passwordHasher;
+        _eventPublisher = eventPublisher;
     }
 
     public async Task<CreateUserResult> Handle(CreateUserCommand command, CancellationToken cancellationToken)
@@ -42,6 +45,7 @@ public class CreateUserHandler : IRequestHandler<CreateUserCommand, CreateUserRe
 
         var createdUser = await _userRepository.CreateAsync(user, cancellationToken);
         await _unitOfWork.CommitAsync(cancellationToken);
+        await _eventPublisher.PublishAsync(new UserRegisteredEvent(createdUser), cancellationToken);
         return _mapper.Map<CreateUserResult>(createdUser);
     }
 }
