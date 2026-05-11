@@ -1,6 +1,7 @@
 using Ambev.DeveloperEvaluation.Application.Users.CreateUser;
 using Ambev.DeveloperEvaluation.Common.Security;
 using Ambev.DeveloperEvaluation.Domain.Entities;
+using Ambev.DeveloperEvaluation.Domain.Events;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
 using Ambev.DeveloperEvaluation.Unit.Domain;
 using AutoMapper;
@@ -19,6 +20,7 @@ public class CreateUserHandlerTests
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly IPasswordHasher _passwordHasher;
+    private readonly IEventPublisher _eventPublisher;
     private readonly CreateUserHandler _handler;
 
     public CreateUserHandlerTests()
@@ -28,7 +30,8 @@ public class CreateUserHandlerTests
         _unitOfWork.CommitAsync(Arg.Any<CancellationToken>()).Returns(1);
         _mapper = Substitute.For<IMapper>();
         _passwordHasher = Substitute.For<IPasswordHasher>();
-        _handler = new CreateUserHandler(_userRepository, _unitOfWork, _mapper, _passwordHasher);
+        _eventPublisher = Substitute.For<IEventPublisher>();
+        _handler = new CreateUserHandler(_userRepository, _unitOfWork, _mapper, _passwordHasher, _eventPublisher);
     }
 
     /// <summary>
