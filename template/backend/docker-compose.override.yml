@@ -13,7 +13,7 @@ services:
       - MongoDB__ConnectionString=mongodb://${MONGO_USER:-developer}:${MONGO_PASSWORD:-ev%40luAt10n}@ambev.developerevaluation.nosql:27017
       - MongoDB__DatabaseName=${MONGO_DB:-developer_evaluation}
       - MongoDB__EventsCollectionName=${MONGO_EVENTS_COLLECTION:-domain_events}
-      - RabbitMq__ConnectionString=amqp://${RABBITMQ_USER:-developer}:${RABBITMQ_PASSWORD:-ev@luAt10n}@ambev.developerevaluation.rabbitmq:5672
+      - RabbitMq__ConnectionString=amqp://${RABBITMQ_USER:-developer}:${RABBITMQ_PASSWORD:-ev%40luAt10n}@ambev.developerevaluation.rabbitmq:5672
     ports:
       - "8080:8080"
     depends_on:
