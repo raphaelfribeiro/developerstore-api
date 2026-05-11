@@ -89,11 +89,13 @@ public class UpdateProductProfile : Profile
 public class UpdateProductHandler : IRequestHandler<UpdateProductCommand, UpdateProductResult>
 {
     private readonly IProductRepository _productRepository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
 
-    public UpdateProductHandler(IProductRepository productRepository, IMapper mapper)
+    public UpdateProductHandler(IProductRepository productRepository, IUnitOfWork unitOfWork, IMapper mapper)
     {
         _productRepository = productRepository;
+        _unitOfWork = unitOfWork;
         _mapper = mapper;
     }
 
@@ -115,6 +117,7 @@ public class UpdateProductHandler : IRequestHandler<UpdateProductCommand, Update
         product.UpdatedAt = DateTime.UtcNow;
 
         var updated = await _productRepository.UpdateAsync(product, cancellationToken);
+        await _unitOfWork.CommitAsync(cancellationToken);
         return _mapper.Map<UpdateProductResult>(updated);
     }
 }

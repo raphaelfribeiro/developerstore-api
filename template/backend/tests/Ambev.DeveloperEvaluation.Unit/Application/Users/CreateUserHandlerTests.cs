@@ -16,20 +16,19 @@ namespace Ambev.DeveloperEvaluation.Unit.Application.Users;
 public class CreateUserHandlerTests
 {
     private readonly IUserRepository _userRepository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly IPasswordHasher _passwordHasher;
     private readonly CreateUserHandler _handler;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="CreateUserHandlerTests"/> class.
-    /// Sets up the test dependencies and creates fake data generators.
-    /// </summary>
     public CreateUserHandlerTests()
     {
         _userRepository = Substitute.For<IUserRepository>();
+        _unitOfWork = Substitute.For<IUnitOfWork>();
+        _unitOfWork.CommitAsync(Arg.Any<CancellationToken>()).Returns(1);
         _mapper = Substitute.For<IMapper>();
         _passwordHasher = Substitute.For<IPasswordHasher>();
-        _handler = new CreateUserHandler(_userRepository, _mapper, _passwordHasher);
+        _handler = new CreateUserHandler(_userRepository, _unitOfWork, _mapper, _passwordHasher);
     }
 
     /// <summary>

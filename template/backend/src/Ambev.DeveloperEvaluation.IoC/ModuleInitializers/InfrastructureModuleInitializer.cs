@@ -15,6 +15,9 @@ public class InfrastructureModuleInitializer : IModuleInitializer
     {
         builder.Services.AddScoped<DbContext>(provider => provider.GetRequiredService<DefaultContext>());
 
+        // Unit of Work
+        builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
         // User
         builder.Services.AddScoped<IUserRepository, UserRepository>();
 

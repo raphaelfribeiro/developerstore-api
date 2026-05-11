@@ -108,15 +108,18 @@ public class UpdateSaleProfile : Profile
 public class UpdateSaleHandler : IRequestHandler<UpdateSaleCommand, UpdateSaleResult>
 {
     private readonly ISaleRepository _saleRepository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IEventPublisher _eventPublisher;
     private readonly IMapper _mapper;
 
     public UpdateSaleHandler(
         ISaleRepository saleRepository,
+        IUnitOfWork unitOfWork,
         IEventPublisher eventPublisher,
         IMapper mapper)
     {
         _saleRepository = saleRepository;
+        _unitOfWork = unitOfWork;
         _eventPublisher = eventPublisher;
         _mapper = mapper;
     }
@@ -134,6 +137,7 @@ public class UpdateSaleHandler : IRequestHandler<UpdateSaleCommand, UpdateSaleRe
         sale.ReplaceItems(newItems); // re-applies discount rules
 
         var updated = await _saleRepository.UpdateAsync(sale, cancellationToken);
+        await _unitOfWork.CommitAsync(cancellationToken);
 
         await _eventPublisher.PublishAsync(
             new SaleModifiedEvent(updated.Id, updated.SaleNumber, updated.TotalAmount),

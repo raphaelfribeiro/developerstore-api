@@ -22,10 +22,12 @@ public class DeleteCartResult
 public class DeleteCartHandler : IRequestHandler<DeleteCartCommand, DeleteCartResult>
 {
     private readonly ICartRepository _cartRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public DeleteCartHandler(ICartRepository cartRepository)
+    public DeleteCartHandler(ICartRepository cartRepository, IUnitOfWork unitOfWork)
     {
         _cartRepository = cartRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<DeleteCartResult> Handle(DeleteCartCommand command, CancellationToken cancellationToken)
@@ -38,6 +40,7 @@ public class DeleteCartHandler : IRequestHandler<DeleteCartCommand, DeleteCartRe
         if (!success)
             throw new KeyNotFoundException($"Cart with ID {command.Id} not found.");
 
+        await _unitOfWork.CommitAsync(cancellationToken);
         return new DeleteCartResult { Success = true };
     }
 }

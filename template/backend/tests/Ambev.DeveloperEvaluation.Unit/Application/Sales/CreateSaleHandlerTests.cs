@@ -16,6 +16,7 @@ namespace Ambev.DeveloperEvaluation.Unit.Application.Sales;
 public class CreateSaleHandlerTests
 {
     private readonly ISaleRepository _saleRepository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IEventPublisher _eventPublisher;
     private readonly IMapper _mapper;
     private readonly CreateSaleHandler _handler;
@@ -23,9 +24,11 @@ public class CreateSaleHandlerTests
     public CreateSaleHandlerTests()
     {
         _saleRepository = Substitute.For<ISaleRepository>();
+        _unitOfWork = Substitute.For<IUnitOfWork>();
+        _unitOfWork.CommitAsync(Arg.Any<CancellationToken>()).Returns(1);
         _eventPublisher = Substitute.For<IEventPublisher>();
         _mapper = Substitute.For<IMapper>();
-        _handler = new CreateSaleHandler(_saleRepository, _eventPublisher, _mapper);
+        _handler = new CreateSaleHandler(_saleRepository, _unitOfWork, _eventPublisher, _mapper);
     }
 
     [Fact(DisplayName = "Given valid sale command When creating sale Then returns success response")]

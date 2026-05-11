@@ -22,10 +22,12 @@ public class DeleteProductResult
 public class DeleteProductHandler : IRequestHandler<DeleteProductCommand, DeleteProductResult>
 {
     private readonly IProductRepository _productRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public DeleteProductHandler(IProductRepository productRepository)
+    public DeleteProductHandler(IProductRepository productRepository, IUnitOfWork unitOfWork)
     {
         _productRepository = productRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<DeleteProductResult> Handle(DeleteProductCommand command, CancellationToken cancellationToken)
@@ -38,6 +40,7 @@ public class DeleteProductHandler : IRequestHandler<DeleteProductCommand, Delete
         if (!success)
             throw new KeyNotFoundException($"Product with ID {command.Id} not found.");
 
+        await _unitOfWork.CommitAsync(cancellationToken);
         return new DeleteProductResult { Success = true };
     }
 }

@@ -35,11 +35,13 @@ public class CancelSaleItemResult
 public class CancelSaleItemHandler : IRequestHandler<CancelSaleItemCommand, CancelSaleItemResult>
 {
     private readonly ISaleRepository _saleRepository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IEventPublisher _eventPublisher;
 
-    public CancelSaleItemHandler(ISaleRepository saleRepository, IEventPublisher eventPublisher)
+    public CancelSaleItemHandler(ISaleRepository saleRepository, IUnitOfWork unitOfWork, IEventPublisher eventPublisher)
     {
         _saleRepository = saleRepository;
+        _unitOfWork = unitOfWork;
         _eventPublisher = eventPublisher;
     }
 
@@ -55,8 +57,8 @@ public class CancelSaleItemHandler : IRequestHandler<CancelSaleItemCommand, Canc
         var item = sale.Items.FirstOrDefault(i => i.Id == command.ItemId)
             ?? throw new KeyNotFoundException($"Item with ID {command.ItemId} not found in sale {command.SaleId}.");
 
-        sale.CancelItem(command.ItemId); // business rule: updates total
-        await _saleRepository.SaveAsync(sale, cancellationToken);
+        sale.CancelItem(command.ItemId);
+        await _unitOfWork.CommitAsync(cancellationToken);
 
         await _eventPublisher.PublishAsync(
             new ItemCancelledEvent(sale.Id, item.Id, item.ProductId),

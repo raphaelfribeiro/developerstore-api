@@ -17,14 +17,17 @@ namespace Ambev.DeveloperEvaluation.Unit.Application.Carts;
 public class CreateCartHandlerTests
 {
     private readonly ICartRepository _cartRepository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly CreateCartHandler _handler;
 
     public CreateCartHandlerTests()
     {
         _cartRepository = Substitute.For<ICartRepository>();
+        _unitOfWork = Substitute.For<IUnitOfWork>();
+        _unitOfWork.CommitAsync(Arg.Any<CancellationToken>()).Returns(1);
         _mapper = Substitute.For<IMapper>();
-        _handler = new CreateCartHandler(_cartRepository, _mapper);
+        _handler = new CreateCartHandler(_cartRepository, _unitOfWork, _mapper);
     }
 
     [Fact(DisplayName = "Given valid cart command When creating cart Then returns success response")]
@@ -123,14 +126,17 @@ public class GetCartHandlerTests
 public class UpdateCartHandlerTests
 {
     private readonly ICartRepository _cartRepository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly UpdateCartHandler _handler;
 
     public UpdateCartHandlerTests()
     {
         _cartRepository = Substitute.For<ICartRepository>();
+        _unitOfWork = Substitute.For<IUnitOfWork>();
+        _unitOfWork.CommitAsync(Arg.Any<CancellationToken>()).Returns(1);
         _mapper = Substitute.For<IMapper>();
-        _handler = new UpdateCartHandler(_cartRepository, _mapper);
+        _handler = new UpdateCartHandler(_cartRepository, _unitOfWork, _mapper);
     }
 
     [Fact(DisplayName = "Given valid update command When updating cart Then returns updated cart")]
@@ -198,12 +204,15 @@ public class UpdateCartHandlerTests
 public class DeleteCartHandlerTests
 {
     private readonly ICartRepository _cartRepository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly DeleteCartHandler _handler;
 
     public DeleteCartHandlerTests()
     {
         _cartRepository = Substitute.For<ICartRepository>();
-        _handler = new DeleteCartHandler(_cartRepository);
+        _unitOfWork = Substitute.For<IUnitOfWork>();
+        _unitOfWork.CommitAsync(Arg.Any<CancellationToken>()).Returns(1);
+        _handler = new DeleteCartHandler(_cartRepository, _unitOfWork);
     }
 
     [Fact(DisplayName = "Given existing cart When deleting Then returns success")]

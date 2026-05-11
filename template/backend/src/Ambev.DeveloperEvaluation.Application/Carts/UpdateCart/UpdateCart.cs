@@ -85,11 +85,13 @@ public class UpdateCartProfile : Profile
 public class UpdateCartHandler : IRequestHandler<UpdateCartCommand, UpdateCartResult>
 {
     private readonly ICartRepository _cartRepository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
 
-    public UpdateCartHandler(ICartRepository cartRepository, IMapper mapper)
+    public UpdateCartHandler(ICartRepository cartRepository, IUnitOfWork unitOfWork, IMapper mapper)
     {
         _cartRepository = cartRepository;
+        _unitOfWork = unitOfWork;
         _mapper = mapper;
     }
 
@@ -114,6 +116,7 @@ public class UpdateCartHandler : IRequestHandler<UpdateCartCommand, UpdateCartRe
         cart.UpdateItems(newItems);
 
         var updated = await _cartRepository.UpdateAsync(cart, cancellationToken);
+        await _unitOfWork.CommitAsync(cancellationToken);
 
         return _mapper.Map<UpdateCartResult>(updated);
     }

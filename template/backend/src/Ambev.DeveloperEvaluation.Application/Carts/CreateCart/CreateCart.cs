@@ -86,11 +86,13 @@ public class CreateCartProfile : Profile
 public class CreateCartHandler : IRequestHandler<CreateCartCommand, CreateCartResult>
 {
     private readonly ICartRepository _cartRepository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
 
-    public CreateCartHandler(ICartRepository cartRepository, IMapper mapper)
+    public CreateCartHandler(ICartRepository cartRepository, IUnitOfWork unitOfWork, IMapper mapper)
     {
         _cartRepository = cartRepository;
+        _unitOfWork = unitOfWork;
         _mapper = mapper;
     }
 
@@ -106,6 +108,7 @@ public class CreateCartHandler : IRequestHandler<CreateCartCommand, CreateCartRe
             cart.AddItem(CartItem.Create(itemCmd.ProductId, itemCmd.Quantity));
 
         var created = await _cartRepository.CreateAsync(cart, cancellationToken);
+        await _unitOfWork.CommitAsync(cancellationToken);
         return _mapper.Map<CreateCartResult>(created);
     }
 }
