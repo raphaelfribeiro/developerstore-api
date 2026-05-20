@@ -1,0 +1,1600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeveloperStore — Technical Decisions</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --primary: #1a1a2e;
+    --accent: #e94560;
+    --accent2: #0f3460;
+    --accent3: #533483;
+    --light: #f8f9fa;
+    --border: #dee2e6;
+    --text: #212529;
+    --muted: #6c757d;
+    --code-bg: #1e1e2e;
+    --code-text: #cdd6f4;
+    --success: #198754;
+    --warning: #fd7e14;
+    --info: #0dcaf0;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.65;
+    color: var(--text);
+    background: #fff;
+  }
+
+  /* ── Cover Page ── */
+  .cover {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--accent2) 50%, var(--accent3) 100%);
+    color: #fff;
+    text-align: center;
+    padding: 60px 40px;
+    page-break-after: always;
+  }
+
+  .cover-logo {
+    font-size: 48pt;
+    font-weight: 700;
+    letter-spacing: -2px;
+    margin-bottom: 8px;
+    background: linear-gradient(90deg, #fff 0%, #a78bfa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .cover-subtitle {
+    font-size: 13pt;
+    font-weight: 300;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 60px;
+  }
+
+  .cover-title {
+    font-size: 28pt;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 12px;
+    line-height: 1.2;
+  }
+
+  .cover-desc {
+    font-size: 12pt;
+    color: rgba(255,255,255,0.75);
+    max-width: 540px;
+    margin-bottom: 60px;
+  }
+
+  .cover-meta {
+    display: flex;
+    gap: 40px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .cover-meta-item {
+    text-align: center;
+  }
+
+  .cover-meta-label {
+    font-size: 8pt;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 4px;
+  }
+
+  .cover-meta-value {
+    font-size: 11pt;
+    font-weight: 500;
+    color: #fff;
+  }
+
+  .cover-divider {
+    width: 60px;
+    height: 3px;
+    background: var(--accent);
+    margin: 40px auto;
+    border-radius: 2px;
+  }
+
+  /* ── TOC ── */
+  .toc-page {
+    padding: 60px 72px;
+    page-break-after: always;
+    min-height: 100vh;
+  }
+
+  .toc-title {
+    font-size: 22pt;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 8px;
+  }
+
+  .toc-line {
+    width: 48px;
+    height: 3px;
+    background: var(--accent);
+    margin-bottom: 40px;
+    border-radius: 2px;
+  }
+
+  .toc-list {
+    list-style: none;
+  }
+
+  .toc-list li {
+    display: flex;
+    align-items: baseline;
+    padding: 7px 0;
+    border-bottom: 1px dotted var(--border);
+    font-size: 10.5pt;
+  }
+
+  .toc-num {
+    font-weight: 700;
+    color: var(--accent);
+    width: 32px;
+    flex-shrink: 0;
+    font-size: 9pt;
+  }
+
+  .toc-name {
+    flex: 1;
+    color: var(--text);
+  }
+
+  .toc-sub {
+    padding-left: 32px;
+    font-size: 9.5pt;
+    color: var(--muted);
+    border-bottom: none;
+    padding-top: 3px;
+    padding-bottom: 3px;
+  }
+
+  /* ── Section Pages ── */
+  .section {
+    padding: 60px 72px;
+    page-break-before: always;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    margin-bottom: 36px;
+    padding-bottom: 24px;
+    border-bottom: 2px solid var(--border);
+  }
+
+  .section-num {
+    font-size: 36pt;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1;
+    flex-shrink: 0;
+    opacity: 0.4;
+  }
+
+  .section-info {
+    flex: 1;
+  }
+
+  .section-category {
+    font-size: 8pt;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+
+  .section-title {
+    font-size: 20pt;
+    font-weight: 700;
+    color: var(--primary);
+    line-height: 1.2;
+  }
+
+  .section-lead {
+    font-size: 11pt;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+
+  /* ── Content Elements ── */
+  h3 {
+    font-size: 13pt;
+    font-weight: 600;
+    color: var(--primary);
+    margin: 28px 0 12px;
+    padding-left: 12px;
+    border-left: 3px solid var(--accent);
+  }
+
+  h4 {
+    font-size: 11pt;
+    font-weight: 600;
+    color: var(--accent2);
+    margin: 20px 0 8px;
+  }
+
+  p {
+    margin-bottom: 12px;
+  }
+
+  ul, ol {
+    padding-left: 24px;
+    margin-bottom: 12px;
+  }
+
+  li {
+    margin-bottom: 5px;
+  }
+
+  strong {
+    font-weight: 600;
+    color: var(--primary);
+  }
+
+  em {
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  /* ── Code Block ── */
+  pre {
+    background: var(--code-bg);
+    color: var(--code-text);
+    padding: 16px 20px;
+    border-radius: 8px;
+    font-family: 'JetBrains Mono', 'Consolas', monospace;
+    font-size: 8.5pt;
+    line-height: 1.6;
+    margin: 16px 0;
+    overflow-x: auto;
+    page-break-inside: avoid;
+  }
+
+  code {
+    font-family: 'JetBrains Mono', 'Consolas', monospace;
+    font-size: 8.5pt;
+    background: #f3f4f6;
+    color: #d63384;
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+
+  pre code {
+    background: transparent;
+    color: inherit;
+    padding: 0;
+  }
+
+  /* ── Tables ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 9.5pt;
+    page-break-inside: avoid;
+  }
+
+  th {
+    background: var(--primary);
+    color: #fff;
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 9pt;
+    letter-spacing: 0.5px;
+  }
+
+  td {
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+
+  tr:nth-child(even) td {
+    background: #f8f9fa;
+  }
+
+  tr:hover td {
+    background: #e8f4f8;
+  }
+
+  /* ── Callout Boxes ── */
+  .callout {
+    display: flex;
+    gap: 14px;
+    padding: 16px 18px;
+    border-radius: 8px;
+    margin: 16px 0;
+    page-break-inside: avoid;
+  }
+
+  .callout-icon {
+    font-size: 18pt;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+
+  .callout-body { flex: 1; }
+
+  .callout-title {
+    font-weight: 700;
+    font-size: 10pt;
+    margin-bottom: 4px;
+  }
+
+  .callout-text {
+    font-size: 9.5pt;
+    margin: 0;
+  }
+
+  .callout.info    { background: #e8f4f8; border-left: 4px solid #0dcaf0; }
+  .callout.success { background: #e8f5e9; border-left: 4px solid #198754; }
+  .callout.warning { background: #fff3e0; border-left: 4px solid #fd7e14; }
+  .callout.tip     { background: #f3e8ff; border-left: 4px solid #8b5cf6; }
+
+  /* ── Architecture Diagram ── */
+  .arch-diagram {
+    display: grid;
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin: 16px 0;
+    page-break-inside: avoid;
+  }
+
+  .arch-layer {
+    display: flex;
+    gap: 1px;
+    background: var(--border);
+  }
+
+  .arch-cell {
+    flex: 1;
+    padding: 12px 16px;
+    background: #fff;
+    text-align: center;
+  }
+
+  .arch-cell.primary { background: #1a1a2e; color: #fff; }
+  .arch-cell.accent  { background: #e94560; color: #fff; }
+  .arch-cell.blue    { background: #0f3460; color: #fff; }
+  .arch-cell.purple  { background: #533483; color: #fff; }
+  .arch-cell.gray    { background: #6c757d; color: #fff; }
+  .arch-cell.light   { background: #f8f9fa; }
+  .arch-cell.green   { background: #198754; color: #fff; }
+  .arch-cell.teal    { background: #0d6e6e; color: #fff; }
+
+  .arch-cell-name {
+    font-weight: 700;
+    font-size: 9pt;
+  }
+
+  .arch-cell-sub {
+    font-size: 7.5pt;
+    opacity: 0.8;
+    margin-top: 2px;
+  }
+
+  /* ── Flow Diagram ── */
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex-wrap: wrap;
+    margin: 16px 0;
+    page-break-inside: avoid;
+  }
+
+  .flow-step {
+    background: var(--accent2);
+    color: #fff;
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-size: 8.5pt;
+    font-weight: 600;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .flow-arrow {
+    color: var(--muted);
+    font-size: 14pt;
+    padding: 0 6px;
+    flex-shrink: 0;
+  }
+
+  /* ── Badges ── */
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 8pt;
+    font-weight: 600;
+    margin: 2px;
+  }
+
+  .badge-green  { background: #d1fae5; color: #065f46; }
+  .badge-blue   { background: #dbeafe; color: #1e40af; }
+  .badge-purple { background: #ede9fe; color: #5b21b6; }
+  .badge-red    { background: #fee2e2; color: #991b1b; }
+  .badge-orange { background: #ffedd5; color: #9a3412; }
+
+  /* ── Metric Cards ── */
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin: 16px 0;
+    page-break-inside: avoid;
+  }
+
+  .metric-card {
+    background: #f8f9fa;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+  }
+
+  .metric-value {
+    font-size: 22pt;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .metric-label {
+    font-size: 8pt;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* ── Decision Table (Summary) ── */
+  .decision-table th:first-child { width: 35%; }
+  .decision-table th:nth-child(2) { width: 30%; }
+
+  /* ── Page Break ── */
+  .page-break { page-break-after: always; }
+
+  /* ── Print Styles ── */
+  @media print {
+    body { font-size: 10pt; }
+    .cover { page-break-after: always; }
+    .section { page-break-before: always; }
+    pre { page-break-inside: avoid; }
+    table { page-break-inside: avoid; }
+    .callout { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════
+     COVER PAGE
+     ══════════════════════════════════════════════════ -->
+<div class="cover">
+  <div class="cover-logo">DeveloperStore</div>
+  <div class="cover-subtitle">Ambev Developer Evaluation</div>
+  <div class="cover-divider"></div>
+  <div class="cover-title">Technical and<br>Architectural Decisions</div>
+  <div class="cover-desc">
+    Document consolidating every design decision, adopted pattern and technical
+    rationale applied in the final solution of the senior-level challenge.
+  </div>
+  <div class="cover-meta">
+    <div class="cover-meta-item">
+      <div class="cover-meta-label">Version</div>
+      <div class="cover-meta-value">2.0 — Final</div>
+    </div>
+    <div class="cover-meta-item">
+      <div class="cover-meta-label">Date</div>
+      <div class="cover-meta-value">May 2026</div>
+    </div>
+    <div class="cover-meta-item">
+      <div class="cover-meta-label">Release</div>
+      <div class="cover-meta-value">v1.0.0</div>
+    </div>
+    <div class="cover-meta-item">
+      <div class="cover-meta-label">Coverage</div>
+      <div class="cover-meta-value">93.3% Lines</div>
+    </div>
+    <div class="cover-meta-item">
+      <div class="cover-meta-label">Tests</div>
+      <div class="cover-meta-value">284+ Automated</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     TABLE OF CONTENTS
+     ══════════════════════════════════════════════════ -->
+<div class="toc-page">
+  <div class="toc-title">Table of Contents</div>
+  <div class="toc-line"></div>
+  <ul class="toc-list">
+    <li><span class="toc-num">01</span><span class="toc-name">Architecture Overview</span></li>
+    <li class="toc-sub">Clean Architecture · DDD · CQRS · Mediator</li>
+    <li><span class="toc-num">02</span><span class="toc-name">Project Structure and Layers</span></li>
+    <li class="toc-sub">Domain · Application · ORM · IoC · WebApi · Common</li>
+    <li><span class="toc-num">03</span><span class="toc-name">Repository Pattern and Unit of Work</span></li>
+    <li class="toc-sub">IRepository · IUnitOfWork · AsNoTracking · EF Core</li>
+    <li><span class="toc-num">04</span><span class="toc-name">Domain Events System</span></li>
+    <li class="toc-sub">IEventPublisher · Rebus · RabbitMQ · MongoDB · Decorator</li>
+    <li><span class="toc-num">05</span><span class="toc-name">Authentication and Security</span></li>
+    <li class="toc-sub">JWT HS256 · BCrypt · OWASP A01 · RBAC</li>
+    <li><span class="toc-num">06</span><span class="toc-name">IoC Module and Dependency Initialization</span></li>
+    <li class="toc-sub">DependencyResolver · IModuleInitializer · ModuleInitializers</li>
+    <li><span class="toc-num">07</span><span class="toc-name">REST API Design</span></li>
+    <li class="toc-sub">Conventions · Pagination · Filters · Validation · Responses</li>
+    <li><span class="toc-num">08</span><span class="toc-name">Testing Strategy</span></li>
+    <li class="toc-sub">Unit · Integration · Functional · Testcontainers · 93.3% Coverage</li>
+    <li><span class="toc-num">09</span><span class="toc-name">GitFlow, Versioning and CI/CD</span></li>
+    <li class="toc-sub">GitHub Actions · Docker · Conventional Commits · Release Tags</li>
+    <li><span class="toc-num">10</span><span class="toc-name">Business Rules — Sales</span></li>
+    <li class="toc-sub">Discounts · Cancellation · Domain Events</li>
+    <li><span class="toc-num">–</span><span class="toc-name">Decision Summary Table</span></li>
+    <li><span class="toc-num">–</span><span class="toc-name">Frequently Asked Questions (FAQ)</span></li>
+  </ul>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     SECTION 01 — ARCHITECTURE OVERVIEW
+     ══════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num">01</div>
+    <div class="section-info">
+      <div class="section-category">Software Architecture</div>
+      <div class="section-title">Architecture Overview</div>
+      <div class="section-lead">Clean Architecture · Domain-Driven Design · CQRS · Mediator Pattern</div>
+    </div>
+  </div>
+
+  <p>The DeveloperStore solution is built on <strong>Clean Architecture</strong> combined with <strong>Domain-Driven Design (DDD)</strong> principles and the <strong>CQRS</strong> (Command Query Responsibility Segregation) pattern. This combination ensures a clear separation of concerns, maximum testability and low coupling between layers.</p>
+
+  <h3>Clean Architecture Layers</h3>
+
+  <div class="arch-diagram">
+    <div class="arch-layer">
+      <div class="arch-cell accent" style="flex: 0.5;">
+        <div class="arch-cell-name">HTTP Clients</div>
+        <div class="arch-cell-sub">Angular · Postman · Scripts</div>
+      </div>
+    </div>
+    <div class="arch-layer">
+      <div class="arch-cell blue">
+        <div class="arch-cell-name">WebApi</div>
+        <div class="arch-cell-sub">Controllers · Middleware · JWT Auth</div>
+      </div>
+      <div class="arch-cell gray">
+        <div class="arch-cell-name">Common</div>
+        <div class="arch-cell-sub">HealthChecks · Logging · Validation</div>
+      </div>
+    </div>
+    <div class="arch-layer">
+      <div class="arch-cell purple">
+        <div class="arch-cell-name">Application</div>
+        <div class="arch-cell-sub">Commands · Queries · Handlers · DTOs · Validators</div>
+      </div>
+      <div class="arch-cell gray">
+        <div class="arch-cell-name">IoC</div>
+        <div class="arch-cell-sub">DependencyResolver · ModuleInitializers</div>
+      </div>
+    </div>
+    <div class="arch-layer">
+      <div class="arch-cell primary" style="flex: 2;">
+        <div class="arch-cell-name">Domain (Core)</div>
+        <div class="arch-cell-sub">Entities · Value Objects · Repository Interfaces · Domain Events · Business Rules</div>
+      </div>
+    </div>
+    <div class="arch-layer">
+      <div class="arch-cell teal">
+        <div class="arch-cell-name">ORM / Infrastructure</div>
+        <div class="arch-cell-sub">EF Core · Repositories · UoW · EventPublisher · Migrations · Seeding</div>
+      </div>
+    </div>
+    <div class="arch-layer">
+      <div class="arch-cell green">
+        <div class="arch-cell-name">PostgreSQL</div>
+        <div class="arch-cell-sub">Transactional data</div>
+      </div>
+      <div class="arch-cell" style="background:#6f4e37;color:#fff;">
+        <div class="arch-cell-name">MongoDB</div>
+        <div class="arch-cell-sub">Event Store</div>
+      </div>
+      <div class="arch-cell" style="background:#ff6600;color:#fff;">
+        <div class="arch-cell-name">RabbitMQ</div>
+        <div class="arch-cell-sub">Message Bus</div>
+      </div>
+    </div>
+  </div>
+
+  <h3>The Dependency Rule</h3>
+  <p>All dependencies point <strong>inward</strong>. The <code>Domain</code> knows about no other layer — it defines only interfaces (abstractions). ORM, Application and WebApi implement or consume these interfaces. IoC is the only project authorized to "see" multiple layers in order to register the concrete implementations.</p>
+
+  <h3>CQRS via MediatR</h3>
+  <p>Every operation is represented by a separate <strong>Command</strong> (write) or <strong>Query</strong> (read). MediatR automatically routes to the corresponding <strong>Handler</strong>. This eliminates fat controllers and centralizes the logic in the application handlers.</p>
+
+  <div class="flow">
+    <div class="flow-step">Controller</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">MediatR.Send()</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">ValidationBehavior</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Handler</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Repository / UoW</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Domain Event</div>
+  </div>
+
+  <h3>Complementary Patterns Applied</h3>
+  <table>
+    <tr><th>Pattern</th><th>Where It Is Applied</th><th>Main Benefit</th></tr>
+    <tr><td><strong>Repository</strong></td><td>Interfaces in Domain, implementations in ORM</td><td>Isolates persistence, eases testing</td></tr>
+    <tr><td><strong>Unit of Work</strong></td><td>IUnitOfWork + CommitAsync in every write handler</td><td>Guarantees transactional atomicity</td></tr>
+    <tr><td><strong>Decorator</strong></td><td>MongoEventPublisher → LoggingEventPublisher → RebusEventPublisher</td><td>Composed behaviors without inheritance</td></tr>
+    <tr><td><strong>Pipeline Behavior</strong></td><td>ValidationBehavior (MediatR)</td><td>Automatic validation before any handler</td></tr>
+    <tr><td><strong>Module Initializer</strong></td><td>IoC — ApplicationModuleInitializer, OrmModuleInitializer, WebApiModuleInitializer</td><td>Modular, testable initialization</td></tr>
+    <tr><td><strong>Factory</strong></td><td>IDesignTimeDbContextFactory in ORM</td><td>Migrations independent of WebApi</td></tr>
+  </table>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     SECTION 02 — PROJECT STRUCTURE
+     ══════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num">02</div>
+    <div class="section-info">
+      <div class="section-category">Code Organization</div>
+      <div class="section-title">Project Structure and Layers</div>
+      <div class="section-lead">6 src projects + 3 test projects + feature-based organization</div>
+    </div>
+  </div>
+
+  <h3>Production Projects (src/)</h3>
+  <table>
+    <tr><th>Project</th><th>Responsibility</th><th>Direct Dependencies</th></tr>
+    <tr>
+      <td><strong>Domain</strong></td>
+      <td>Entities, VOs, repository interfaces, domain events, pure business rules</td>
+      <td><em>None</em> (innermost layer)</td>
+    </tr>
+    <tr>
+      <td><strong>Application</strong></td>
+      <td>Commands, Queries, Handlers, DTOs, Validators (FluentValidation), AutoMapper Profiles</td>
+      <td>Domain</td>
+    </tr>
+    <tr>
+      <td><strong>ORM</strong></td>
+      <td>DbContext, EF Core repositories, UnitOfWork, Migrations, Seeding, EventPublisher chain</td>
+      <td>Domain, Application</td>
+    </tr>
+    <tr>
+      <td><strong>IoC</strong></td>
+      <td>DependencyResolver, IModuleInitializer, per-module DI registrations</td>
+      <td>Domain, Application, ORM, WebApi, Common</td>
+    </tr>
+    <tr>
+      <td><strong>WebApi</strong></td>
+      <td>Controllers, Middleware, Program.cs, startup configuration</td>
+      <td>Application, IoC, Common</td>
+    </tr>
+    <tr>
+      <td><strong>Common</strong></td>
+      <td>Custom HealthChecks, Logging configuration (Serilog), security extensions, cross-cutting middlewares</td>
+      <td>Domain (optional)</td>
+    </tr>
+  </table>
+
+  <h3>Test Projects (tests/)</h3>
+  <table>
+    <tr><th>Project</th><th>Scope</th><th>Infrastructure</th><th>Tests</th></tr>
+    <tr>
+      <td><strong>Unit</strong></td>
+      <td>Handlers, Validators, Domain Entities</td>
+      <td>NSubstitute (pure mocks)</td>
+      <td>240</td>
+    </tr>
+    <tr>
+      <td><strong>Integration</strong></td>
+      <td>Repositories, DbContext, EF Queries</td>
+      <td>Testcontainers real PostgreSQL</td>
+      <td>41</td>
+    </tr>
+    <tr>
+      <td><strong>Functional</strong></td>
+      <td>End-to-end API, complete HTTP flows</td>
+      <td>Isolated Testcontainers + WebApplicationFactory</td>
+      <td>3</td>
+    </tr>
+  </table>
+
+  <h3>Feature-Based Organization (Vertical Slicing)</h3>
+  <p>Inside <code>Application</code>, each aggregate has its own directory containing all the artifacts it needs:</p>
+
+  <pre>Application/
+├── Sales/
+│   ├── CreateSale/   (CreateSaleCommand, CreateSaleResult, CreateSaleHandler, CreateSaleValidator)
+│   ├── GetSale/      (GetSaleQuery, GetSaleResult, GetSaleHandler)
+│   ├── UpdateSale/   ...
+│   ├── DeleteSale/   ...
+│   └── GetSales/     (pagination, filters, ordering)
+├── Users/            (same)
+├── Products/         (same)
+└── Carts/            (same)</pre>
+
+  <div class="callout success">
+    <div class="callout-icon">✓</div>
+    <div class="callout-body">
+      <div class="callout-title">Decision: Vertical Slicing per Aggregate</div>
+      <div class="callout-text">Keeping all artifacts of a use case in the same directory reduces navigation between files, isolates changes and eases onboarding of new developers.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     SECTION 03 — REPOSITORY + UNIT OF WORK
+     ══════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num">03</div>
+    <div class="section-info">
+      <div class="section-category">Data Access Patterns</div>
+      <div class="section-title">Repository Pattern and Unit of Work</div>
+      <div class="section-lead">Abstractions in Domain · Implementations in ORM · AsNoTracking · CommitAsync</div>
+    </div>
+  </div>
+
+  <h3>Interfaces in Domain (no EF dependency)</h3>
+  <p>Every repository has its interface defined in the <code>Domain</code> project, ensuring the upper layers (Application) never depend on EF Core directly:</p>
+
+  <pre>// Domain/Repositories/ISaleRepository.cs
+public interface ISaleRepository
+{
+    Task&lt;Sale&gt; CreateAsync(Sale sale, CancellationToken ct = default);
+    Task&lt;Sale?&gt; GetByIdAsync(Guid id, CancellationToken ct = default);
+    Task&lt;Sale&gt; UpdateAsync(Sale sale, CancellationToken ct = default);
+    Task&lt;bool&gt; DeleteAsync(Guid id, CancellationToken ct = default);
+    IQueryable&lt;Sale&gt; GetAllQueryable();
+}</pre>
+
+  <h3>IQueryable for Pagination and Filters</h3>
+  <p>The <code>GetAllQueryable()</code> method returns <code>IQueryable&lt;T&gt;</code> instead of <code>IEnumerable&lt;T&gt;</code> or <code>List&lt;T&gt;</code>. This allows the <em>GetAll</em> handlers to apply filters, ordering and pagination directly in the database via the SQL generated by EF Core — avoiding loading unnecessary records into memory.</p>
+
+  <pre>// ORM/Repositories/SaleRepository.cs
+public IQueryable&lt;Sale&gt; GetAllQueryable()
+    =&gt; _context.Sales.AsNoTracking()
+                     .Include(s =&gt; s.Items)
+                     .AsQueryable();</pre>
+
+  <div class="callout info">
+    <div class="callout-icon">💡</div>
+    <div class="callout-body">
+      <div class="callout-title">AsNoTracking on all reads</div>
+      <div class="callout-text"><code>AsNoTracking()</code> is applied on all read queries. EF Core does not need to track entities that will not be modified, resulting in lower memory usage and queries that are 20–40% faster on read-heavy workloads.</div>
+    </div>
+  </div>
+
+  <h3>IUnitOfWork — Transactional Atomicity</h3>
+  <p>The Unit of Work pattern ensures that multiple write operations are committed atomically. Every write handler calls <code>_unitOfWork.CommitAsync()</code> at the end and never calls <code>SaveChangesAsync()</code> directly on the repository.</p>
+
+  <pre>// Domain/Repositories/IUnitOfWork.cs
+public interface IUnitOfWork
+{
+    Task&lt;int&gt; CommitAsync(CancellationToken cancellationToken = default);
+}
+
+// ORM/Persistence/UnitOfWork.cs
+public sealed class UnitOfWork : IUnitOfWork
+{
+    private readonly DefaultContext _context;
+    public UnitOfWork(DefaultContext context) =&gt; _context = context;
+
+    public Task&lt;int&gt; CommitAsync(CancellationToken ct = default)
+        =&gt; _context.SaveChangesAsync(ct);
+}</pre>
+
+  <pre>// Application/Sales/CreateSale/CreateSaleHandler.cs
+public async Task&lt;CreateSaleResult&gt; Handle(CreateSaleCommand cmd, CancellationToken ct)
+{
+    var sale = _mapper.Map&lt;Sale&gt;(cmd);
+    sale.CalculateTotals();
+
+    await _saleRepository.CreateAsync(sale, ct);
+    await _unitOfWork.CommitAsync(ct);     // ← single commit point
+
+    await _eventPublisher.PublishAsync(new SaleCreatedEvent(sale.Id));
+    return _mapper.Map&lt;CreateSaleResult&gt;(sale);
+}</pre>
+
+  <h3>Implemented Repositories</h3>
+  <table>
+    <tr><th>Interface (Domain)</th><th>Implementation (ORM)</th><th>Entity</th></tr>
+    <tr><td><code>ISaleRepository</code></td><td><code>SaleRepository</code></td><td>Sale + SaleItem</td></tr>
+    <tr><td><code>IUserRepository</code></td><td><code>UserRepository</code></td><td>User</td></tr>
+    <tr><td><code>IProductRepository</code></td><td><code>ProductRepository</code></td><td>Product</td></tr>
+    <tr><td><code>ICartRepository</code></td><td><code>CartRepository</code></td><td>Cart + CartItem</td></tr>
+    <tr><td><code>IUnitOfWork</code></td><td><code>UnitOfWork</code></td><td>–</td></tr>
+  </table>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     SECTION 04 — DOMAIN EVENTS SYSTEM
+     ══════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num">04</div>
+    <div class="section-info">
+      <div class="section-category">Events and Messaging</div>
+      <div class="section-title">Domain Events System</div>
+      <div class="section-lead">IEventPublisher · Rebus/RabbitMQ · MongoDB Event Store · Decorator Pattern · Polly Retry</div>
+    </div>
+  </div>
+
+  <h3>Contract in Domain</h3>
+  <p>The <code>IEventPublisher</code> interface lives in the <code>Domain</code> project, ensuring the application handlers publish events without knowing the transport technology:</p>
+
+  <pre>// Domain/Events/IEventPublisher.cs
+public interface IEventPublisher
+{
+    Task PublishAsync&lt;TEvent&gt;(TEvent @event, CancellationToken ct = default)
+        where TEvent : class;
+}</pre>
+
+  <h3>Available Domain Events</h3>
+  <table>
+    <tr><th>Event</th><th>Raised in</th></tr>
+    <tr><td><code>SaleCreatedEvent</code></td><td>CreateSaleHandler — new sale created</td></tr>
+    <tr><td><code>SaleModifiedEvent</code></td><td>UpdateSaleHandler — sale updated</td></tr>
+    <tr><td><code>SaleCancelledEvent</code></td><td>DeleteSaleHandler — sale cancelled</td></tr>
+    <tr><td><code>ItemCancelledEvent</code></td><td>UpdateSaleHandler — item cancelled individually</td></tr>
+    <tr><td><code>UserRegisteredEvent</code></td><td>CreateUserHandler — new user registered</td></tr>
+  </table>
+
+  <h3>Decorator Chain: Three Composed Implementations</h3>
+  <p>The Decorator pattern stacks three behaviors around each event publication, without inheritance and without changing the existing classes:</p>
+
+  <pre>// Decorator chain (configured in IoC):
+// MongoEventPublisher
+//   └─ LoggingEventPublisher
+//        └─ RebusEventPublisher   ← final implementation (sends to RabbitMQ via Rebus)
+
+public sealed class MongoEventPublisher : IEventPublisher
+{
+    private readonly IEventPublisher _inner;   // LoggingEventPublisher
+    private readonly IMongoCollection&lt;DomainEventDocument&gt; _collection;
+
+    public async Task PublishAsync&lt;TEvent&gt;(TEvent @event, CancellationToken ct)
+    {
+        // 1. Persist to MongoDB (best-effort — does not block on failure)
+        try { await _collection.InsertOneAsync(...); } catch { /* log only */ }
+
+        // 2. Delegate to the next decorator
+        await _inner.PublishAsync(@event, ct);
+    }
+}
+
+public sealed class LoggingEventPublisher : IEventPublisher
+{
+    private readonly IEventPublisher _inner;   // RebusEventPublisher
+    private readonly ILogger _logger;
+
+    public async Task PublishAsync&lt;TEvent&gt;(TEvent @event, CancellationToken ct)
+    {
+        _logger.LogInformation("Publishing {EventType}", typeof(TEvent).Name);
+        await _inner.PublishAsync(@event, ct);  // 3. Publish to the bus via Rebus
+    }
+}
+
+public sealed class RebusEventPublisher : IEventPublisher
+{
+    private readonly IBus _bus;
+    public async Task PublishAsync&lt;TEvent&gt;(TEvent @event, CancellationToken ct)
+        =&gt; await _bus.Publish(@event);
+}</pre>
+
+  <h3>Rebus + RabbitMQ</h3>
+  <p><strong>Rebus</strong> is the messaging framework that provides an abstraction over the transport. In production it uses <strong>RabbitMQ 3.13</strong>; in development and tests it uses the <strong>InMemory</strong> transport, removing the need for a running RabbitMQ in the unit tests.</p>
+
+  <pre>// IoC — conditional transport configuration
+if (env.IsDevelopment() || env.IsEnvironment("Testing"))
+    rebus.Transport(t =&gt; t.UseInMemoryTransport(network, "developer-store"));
+else
+    rebus.Transport(t =&gt; t.UseRabbitMq(connectionString, "developer-store"));</pre>
+
+  <h3>Four Message Handlers</h3>
+  <p>Each event type has a dedicated <code>IHandleMessages&lt;T&gt;</code> that processes the message asynchronously:</p>
+  <table>
+    <tr><th>Handler</th><th>Consumed Event</th><th>Action</th></tr>
+    <tr><td><code>SaleCreatedEventHandler</code></td><td>SaleCreatedEvent</td><td>Log + audit</td></tr>
+    <tr><td><code>SaleModifiedEventHandler</code></td><td>SaleModifiedEvent</td><td>Log + audit</td></tr>
+    <tr><td><code>SaleCancelledEventHandler</code></td><td>SaleCancelledEvent</td><td>Log + audit</td></tr>
+    <tr><td><code>ItemCancelledEventHandler</code></td><td>ItemCancelledEvent</td><td>Log + audit</td></tr>
+  </table>
+
+  <h3>MongoDB Event Store</h3>
+  <p>All domain events are persisted to MongoDB as a <strong>DomainEventDocument</strong> before being sent to the bus. The operation is <em>best-effort</em>: a MongoDB failure does not prevent publication to RabbitMQ. This creates an immutable audit trail of the domain events:</p>
+
+  <pre>public record DomainEventDocument
+{
+    public ObjectId Id { get; init; }
+    public string EventType { get; init; }
+    public string Payload { get; init; }    // serialized JSON
+    public DateTime OccurredAt { get; init; }
+}</pre>
+
+  <h3>Retry with Polly</h3>
+  <p>Event publication has a retry policy configured with <strong>Polly</strong>: 3 attempts with exponential backoff (1s → 2s → 4s) on a transient network or broker failure:</p>
+
+  <pre>Policy
+  .Handle&lt;Exception&gt;()
+  .WaitAndRetryAsync(3, attempt =&gt; TimeSpan.FromSeconds(Math.Pow(2, attempt - 1)))</pre>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     SECTION 05 — AUTHENTICATION AND SECURITY
+     ══════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num">05</div>
+    <div class="section-info">
+      <div class="section-category">Identity and Access Control</div>
+      <div class="section-title">Authentication and Security</div>
+      <div class="section-lead">JWT HS256 · BCrypt · OWASP A01 · Role-Based Authorization</div>
+    </div>
+  </div>
+
+  <h3>JWT HS256 with Strict Validation</h3>
+  <p>Authentication uses <strong>JWT</strong> with the <strong>HS256</strong> (HMAC-SHA256) algorithm. The secret key is validated at application startup — keys shorter than 32 bytes throw an exception and prevent startup:</p>
+
+  <pre>// Startup validation
+if (jwtKey.Length &lt; 32)
+    throw new InvalidOperationException(
+        "JWT secret key must be at least 32 characters for HS256 security.");</pre>
+
+  <p>Tokens include validation of <strong>Issuer</strong>, <strong>Audience</strong>, <strong>Expiration</strong> and <strong>Signature</strong>. Any invalid token results in HTTP 401 before reaching the controller.</p>
+
+  <h3>BCrypt for Passwords</h3>
+  <p>Passwords are never stored in plain text. The hash is generated with <strong>BCrypt</strong> (work factor 12), which includes an automatic salt and is resistant to brute-force and rainbow-table attacks:</p>
+
+  <pre>// Hash when creating a user
+user.Password = BCrypt.Net.BCrypt.HashPassword(command.Password);
+
+// Verification on login
+BCrypt.Net.BCrypt.Verify(command.Password, user.Password)</pre>
+
+  <h3>OWASP A01 — Ownership Check</h3>
+  <p>The <code>PUT /api/users/{id}</code> endpoint implements object-level access control, addressing one of the most critical vulnerabilities in the <strong>OWASP Top 10 (A01 — Broken Access Control)</strong>. A user can only update their own profile:</p>
+
+  <pre>// UsersController.cs
+[HttpPut("{id}")]
+[Authorize]
+public async Task&lt;IActionResult&gt; UpdateUser(Guid id, UpdateUserRequest request)
+{
+    var authenticatedUserId = Guid.Parse(
+        User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+    if (authenticatedUserId != id)
+        return Forbid(); // HTTP 403 — not the resource owner
+
+    // ...
+}</pre>
+
+  <h3>Role-Based Authorization (RBAC)</h3>
+  <p>The user role-change endpoint requires the <strong>Admin</strong> role:</p>
+
+  <pre>// Only administrators can change roles
+[HttpPatch("{id}/role")]
+[Authorize(Roles = "Admin")]
+public async Task&lt;IActionResult&gt; UpdateUserRole(Guid id, UpdateUserRoleRequest request)
+{
+    // ...
+}</pre>
+
+  <h3>Security Summary Table</h3>
+  <table>
+    <tr><th>Aspect</th><th>Implementation</th><th>Standard/Reference</th></tr>
+    <tr><td>Authentication</td><td>JWT Bearer HS256</td><td>RFC 7519</td></tr>
+    <tr><td>Password hash</td><td>BCrypt work factor 12</td><td>OWASP Password Storage</td></tr>
+    <tr><td>Ownership check</td><td>ClaimTypes.NameIdentifier vs route id</td><td>OWASP A01:2021</td></tr>
+    <tr><td>Role check</td><td>[Authorize(Roles = "Admin")]</td><td>RBAC</td></tr>
+    <tr><td>Key validation</td><td>Minimum 32 bytes at startup</td><td>NIST SP 800-107</td></tr>
+    <tr><td>Public endpoints</td><td>POST /api/auth/login, POST /api/users</td><td>–</td></tr>
+  </table>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     SECTION 06 — IoC MODULE
+     ══════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num">06</div>
+    <div class="section-info">
+      <div class="section-category">Dependency Injection</div>
+      <div class="section-title">IoC Module and Dependency Initialization</div>
+      <div class="section-lead">DependencyResolver · IModuleInitializer · Three ModuleInitializers</div>
+    </div>
+  </div>
+
+  <p>Instead of registering all dependencies directly in <code>Program.cs</code>, the application uses a dedicated <strong>IoC</strong> project with a module pattern, keeping startup clean and the modules independently testable.</p>
+
+  <h3>IModuleInitializer — Module Interface</h3>
+  <pre>// IoC/IModuleInitializer.cs
+public interface IModuleInitializer
+{
+    void Initialize(IServiceCollection services, IConfiguration configuration);
+}</pre>
+
+  <h3>Three ModuleInitializers</h3>
+  <table>
+    <tr><th>Module</th><th>Responsibility</th></tr>
+    <tr>
+      <td><code>ApplicationModuleInitializer</code></td>
+      <td>Registers MediatR handlers, AutoMapper profiles, FluentValidation validators, the ValidationBehavior pipeline</td>
+    </tr>
+    <tr>
+      <td><code>OrmModuleInitializer</code></td>
+      <td>Configures EF Core + PostgreSQL, registers repositories, UnitOfWork, the EventPublisher chain (Decorator), Rebus/RabbitMQ, MongoDB client</td>
+    </tr>
+    <tr>
+      <td><code>WebApiModuleInitializer</code></td>
+      <td>Configures JWT Authentication, role-based authorization, Swagger/OpenAPI, HealthChecks, CORS, Serilog</td>
+    </tr>
+  </table>
+
+  <h3>DependencyResolver — Entry Point</h3>
+  <pre>// IoC/DependencyResolver.cs
+public static class DependencyResolver
+{
+    public static IServiceCollection AddDeveloperStore(
+        this IServiceCollection services,
+        IConfiguration config,
+        IHostEnvironment env)
+    {
+        var initializers = new IModuleInitializer[]
+        {
+            new ApplicationModuleInitializer(),
+            new OrmModuleInitializer(),
+            new WebApiModuleInitializer()
+        };
+
+        foreach (var initializer in initializers)
+            initializer.Initialize(services, config);
+
+        return services;
+    }
+}</pre>
+
+  <pre>// WebApi/Program.cs — extremely clean startup
+builder.Services.AddDeveloperStore(builder.Configuration, builder.Environment);</pre>
+
+  <div class="callout tip">
+    <div class="callout-icon">★</div>
+    <div class="callout-body">
+      <div class="callout-title">Benefit: a one-line Program.cs</div>
+      <div class="callout-text">The IoC project absorbs all the configuration complexity. <code>Program.cs</code> is left with a single extension call, easing maintenance, onboarding and integration tests that need to swap modules.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     SECTION 07 — REST API DESIGN
+     ══════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num">07</div>
+    <div class="section-info">
+      <div class="section-category">External Interface</div>
+      <div class="section-title">REST API Design</div>
+      <div class="section-lead">Conventions · Pagination · Filters and Ordering · Validation · Standardized Responses</div>
+    </div>
+  </div>
+
+  <h3>Available Endpoints</h3>
+  <table>
+    <tr><th>Resource</th><th>Endpoints</th><th>Auth Required</th></tr>
+    <tr><td>Auth</td><td>POST /api/auth/login</td><td>No</td></tr>
+    <tr><td>Users</td><td>POST · GET · PUT /api/users/{id} · PATCH /api/users/{id}/role · DELETE</td><td>Partial (POST open)</td></tr>
+    <tr><td>Products</td><td>POST · GET · GET/{id} · PUT · DELETE /api/products</td><td>Yes</td></tr>
+    <tr><td>Carts</td><td>POST · GET · GET/{id} · PUT · DELETE /api/carts</td><td>Yes</td></tr>
+    <tr><td>Sales</td><td>POST · GET · GET/{id} · PUT · DELETE /api/sales</td><td>Yes</td></tr>
+  </table>
+
+  <h3>Standardized Pagination</h3>
+  <p>All listing endpoints follow the same pagination contract via query params:</p>
+  <pre>GET /api/sales?page=1&size=10&order=date+desc
+
+{
+  "data": [...],
+  "totalCount": 47,
+  "totalPages": 5,
+  "currentPage": 1
+}</pre>
+
+  <h3>Filters and Ordering</h3>
+  <p>The GET (listing) endpoints support server-side filtering. Examples of available filters:</p>
+  <table>
+    <tr><th>Endpoint</th><th>Available Filters</th></tr>
+    <tr><td>GET /api/sales</td><td><code>customerId</code>, <code>branchId</code>, <code>minDate</code>, <code>maxDate</code>, <code>minTotal</code>, <code>isCancelled</code>, <code>order</code></td></tr>
+    <tr><td>GET /api/carts</td><td><code>userId</code>, <code>minDate</code>, <code>maxDate</code>, <code>order</code></td></tr>
+    <tr><td>GET /api/products</td><td><code>title</code>, <code>minPrice</code>, <code>maxPrice</code>, <code>category</code>, <code>order</code></td></tr>
+    <tr><td>GET /api/users</td><td><code>username</code>, <code>email</code>, <code>role</code>, <code>order</code></td></tr>
+  </table>
+
+  <h3>Automatic Validation via ValidationBehavior</h3>
+  <p>The MediatR pipeline includes a <code>ValidationBehavior&lt;TRequest, TResponse&gt;</code> that runs the corresponding FluentValidation validator before any handler. On a validation failure, MediatR returns a <code>ValidationException</code> that the global middleware converts into HTTP 400 with the error details:</p>
+
+  <pre>{
+  "type": "ValidationError",
+  "errors": {
+    "customerId": ["'Customer Id' must not be empty."],
+    "items": ["Items list must not be empty."]
+  }
+}</pre>
+
+  <h3>Standardized HTTP Responses</h3>
+  <table>
+    <tr><th>Situation</th><th>HTTP Status</th><th>Format</th></tr>
+    <tr><td>Successful creation</td><td>201 Created</td><td><code>{ data: {...} }</code></td></tr>
+    <tr><td>Successful read</td><td>200 OK</td><td><code>{ data: {...} }</code> or paginated</td></tr>
+    <tr><td>Validation failed</td><td>400 Bad Request</td><td><code>{ type, errors: {...} }</code></td></tr>
+    <tr><td>Not authenticated</td><td>401 Unauthorized</td><td>–</td></tr>
+    <tr><td>No permission</td><td>403 Forbidden</td><td>–</td></tr>
+    <tr><td>Resource not found</td><td>404 Not Found</td><td><code>{ error: "..." }</code></td></tr>
+  </table>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     SECTION 08 — TESTING STRATEGY
+     ══════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num">08</div>
+    <div class="section-info">
+      <div class="section-category">Quality and Reliability</div>
+      <div class="section-title">Testing Strategy</div>
+      <div class="section-lead">93.3% Coverage · 284+ Automated Tests · Testcontainers · Three Layers</div>
+    </div>
+  </div>
+
+  <div class="metrics">
+    <div class="metric-card">
+      <div class="metric-value">93.3%</div>
+      <div class="metric-label">Line Coverage</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-value">93.6%</div>
+      <div class="metric-label">Branch Coverage</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-value">240</div>
+      <div class="metric-label">Unit Tests</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-value">44</div>
+      <div class="metric-label">Integration + Func. Tests</div>
+    </div>
+  </div>
+
+  <h3>Layer 1 — Unit Tests (240)</h3>
+  <p>They test handlers, validators and domain entities in complete isolation. They use <strong>NSubstitute</strong> to replace dependencies. They need no database or infrastructure.</p>
+
+  <table>
+    <tr><th>Domain</th><th>Test Classes</th><th>Cases</th></tr>
+    <tr><td>Sales</td><td>CreateSaleHandler, GetSaleHandler, UpdateSaleHandler, DeleteSaleHandler, GetSalesHandler + Validators + Entity</td><td>~80</td></tr>
+    <tr><td>Users</td><td>CreateUserHandler, GetUserHandler, UpdateUserHandler, DeleteUserHandler + Validators</td><td>~55</td></tr>
+    <tr><td>Products</td><td>CreateProductHandler, GetProductHandler, UpdateProductHandler, DeleteProductHandler + Validators</td><td>~55</td></tr>
+    <tr><td>Carts</td><td>CreateCartHandler (3), GetCartHandler (2), UpdateCartHandler (3), DeleteCartHandler (2), GetCartsHandler (7)</td><td>17</td></tr>
+    <tr><td>Auth</td><td>CreateTokenHandler, GetTokenHandler</td><td>~10</td></tr>
+    <tr><td>Others</td><td>Domain entities, value objects, business rules</td><td>~23</td></tr>
+  </table>
+
+  <h3>Layer 2 — Integration Tests (41)</h3>
+  <p>They test EF Core repositories against a <strong>real PostgreSQL</strong> provisioned by <strong>Testcontainers</strong>. They verify that the generated SQL queries, migrations and mapping configurations are correct.</p>
+
+  <pre>// Shared fixture — a single PostgreSQL container for the whole integration suite
+[Collection("Integration")]
+public class SaleRepositoryTests : IClassFixture&lt;DatabaseFixture&gt;
+{
+    public SaleRepositoryTests(DatabaseFixture fixture) { ... }
+}</pre>
+
+  <div class="callout success">
+    <div class="callout-icon">✓</div>
+    <div class="callout-body">
+      <div class="callout-title">Testcontainers with ICollectionFixture</div>
+      <div class="callout-text">Using <code>ICollectionFixture</code> ensures that only <strong>one PostgreSQL container</strong> starts for the entire integration test collection, drastically reducing execution time (from ~120s to ~15s for 41 tests).</div>
+    </div>
+  </div>
+
+  <h3>Layer 3 — Functional Tests (3)</h3>
+  <p>End-to-end tests via ASP.NET Core's <strong>WebApplicationFactory</strong>, testing complete HTTP flows (request → middleware → handler → database → response). Each functional test uses its own isolated Testcontainers container.</p>
+
+  <h3>Coverage: Details</h3>
+  <table>
+    <tr><th>Metric</th><th>Covered</th><th>Total</th><th>Percentage</th></tr>
+    <tr><td>Lines</td><td>1,367</td><td>1,465</td><td><strong>93.31%</strong></td></tr>
+    <tr><td>Branches</td><td>176</td><td>188</td><td><strong>93.61%</strong></td></tr>
+  </table>
+
+  <p><em>Coverage scope: Domain and Application projects only — the layers with business logic. ORM and WebApi are excluded as they are heavily covered by the integration and functional tests.</em></p>
+
+  <h3>Running the Tests</h3>
+  <pre># Unit tests with coverage
+dotnet test --collect:"XPlat Code Coverage" --filter "FullyQualifiedName~Unit"
+
+# Integration tests (requires Docker Desktop running)
+dotnet test --filter "FullyQualifiedName~Integration"
+
+# Functional tests (requires Docker Desktop running)
+dotnet test --filter "FullyQualifiedName~Functional"
+
+# HTML coverage report
+./coverage-report.ps1</pre>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     SECTION 09 — GITFLOW, VERSIONING AND CI/CD
+     ══════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num">09</div>
+    <div class="section-info">
+      <div class="section-category">DevOps and Continuous Delivery</div>
+      <div class="section-title">GitFlow, Versioning and CI/CD</div>
+      <div class="section-lead">GitHub Actions · Docker · Conventional Commits · SemVer Tags</div>
+    </div>
+  </div>
+
+  <h3>Strict GitFlow</h3>
+  <p>The project follows <strong>GitFlow</strong> strictly. There are never direct commits to <code>main</code>. Every feature goes through a dedicated branch and a --no-ff merge:</p>
+
+  <table>
+    <tr><th>Branch</th><th>Purpose</th><th>Merge target</th></tr>
+    <tr><td><code>main</code></td><td>Production code — releases only</td><td>–</td></tr>
+    <tr><td><code>develop</code></td><td>Integration branch — always stable</td><td>main (via release)</td></tr>
+    <tr><td><code>feature/*</code></td><td>New features</td><td>develop</td></tr>
+    <tr><td><code>fix/*</code></td><td>Bug fixes</td><td>develop</td></tr>
+    <tr><td><code>docs/*</code></td><td>Documentation updates</td><td>develop</td></tr>
+    <tr><td><code>refactor/*</code></td><td>Refactorings with no behavior change</td><td>develop</td></tr>
+    <tr><td><code>chore/*</code></td><td>Maintenance (deps, CI, config)</td><td>develop</td></tr>
+  </table>
+
+  <h3>Conventional Commits</h3>
+  <p>Every commit follows the <strong>Conventional Commits</strong> specification, enabling automatic changelog generation and semantic versioning:</p>
+
+  <pre>feat: add discount calculation for bulk sales
+fix: correct total amount rounding in cart items
+test: add cart handler unit tests (18 cases)
+refactor: extract IUnitOfWork to domain project
+docs: update README with final coverage metrics
+chore: configure GitHub Actions CI workflow</pre>
+
+  <h3>CI/CD Pipeline — GitHub Actions</h3>
+  <p>The <code>.github/workflows/ci.yml</code> file defines a pipeline with two jobs:</p>
+
+  <div class="flow" style="flex-direction: column; align-items: flex-start; gap: 8px;">
+    <div style="display:flex; align-items:center; gap: 8px; width:100%;">
+      <div class="flow-step" style="background:#0f3460; width:160px; text-align:center;">📦 Restore</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step" style="background:#0f3460; width:160px; text-align:center;">🔨 Build</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step" style="background:#198754; width:180px; text-align:center;">✓ Unit Tests + Coverage</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step" style="background:#198754; width:180px; text-align:center;">✓ Integration Tests</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step" style="background:#198754; width:180px; text-align:center;">✓ Functional Tests</div>
+    </div>
+    <div style="display:flex; align-items:center; gap: 8px; margin-left: 80px;">
+      <div class="flow-arrow" style="transform: rotate(90deg);">→</div>
+    </div>
+    <div style="display:flex; align-items:center; gap: 8px;">
+      <div class="flow-step" style="background:#533483; width:200px; text-align:center;">📊 Coverage Report Artifact</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step" style="background:#e94560; width:200px; text-align:center;">🐳 Docker Build</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step" style="background:#6c757d; width:240px; text-align:center;">⬆ Push Registry (main only)</div>
+    </div>
+  </div>
+
+  <h4>Job: build-and-test</h4>
+  <pre>jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with: { dotnet-version: '8.0.x' }
+      - run: dotnet restore
+      - run: dotnet build --no-restore
+      - run: dotnet test --filter Unit --collect:"XPlat Code Coverage"
+      - run: dotnet test --filter Integration   # Testcontainers provision automatically
+      - run: dotnet test --filter Functional
+      - run: dotnet tool install -g dotnet-reportgenerator-globaltool
+      - run: reportgenerator -reports:**/coverage.cobertura.xml -targetdir:coverage-html
+      - uses: actions/upload-artifact@v4
+        with: { name: coverage-report, path: coverage-html }</pre>
+
+  <h4>Job: docker (needs: build-and-test)</h4>
+  <pre>  docker:
+    needs: build-and-test
+    steps:
+      - run: docker build -t developer-store .
+      - if: github.ref == 'refs/heads/main'
+        run: docker push ${{ env.REGISTRY }}/developer-store</pre>
+
+  <h3>SemVer Versioning and GitHub Releases</h3>
+  <p>The project uses annotated tags with <strong>Semantic Versioning</strong>. The current version is <code>v1.0.0</code>, available as a GitHub Release with automatic changelogs.</p>
+
+  <pre>git tag -a v1.0.0 -m "chore: release v1.0.0 — full implementation"
+git push origin v1.0.0
+gh release create v1.0.0 --title "v1.0.0 — DeveloperStore Final" --generate-notes</pre>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     SECTION 10 — BUSINESS RULES: SALES
+     ══════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num">10</div>
+    <div class="section-info">
+      <div class="section-category">Domain Logic</div>
+      <div class="section-title">Business Rules — Sales</div>
+      <div class="section-lead">Quantity-based discounts · Cancellation · Domain events · Consistency</div>
+    </div>
+  </div>
+
+  <h3>Quantity-Based Discount Calculation</h3>
+  <p>The <code>Sale</code> entity implements automatic discount rules applied item by item at creation and update time:</p>
+
+  <table>
+    <tr><th>Item quantity</th><th>Discount applied</th></tr>
+    <tr><td>1 to 3 units</td><td>0% — no discount</td></tr>
+    <tr><td>4 to 9 units</td><td>10% on the item subtotal</td></tr>
+    <tr><td>10 to 20 units</td><td>20% on the item subtotal</td></tr>
+    <tr><td>More than 20 units</td><td>Forbidden — ValidationException thrown</td></tr>
+  </table>
+
+  <pre>// Domain/Entities/SaleItem.cs
+public void ApplyDiscount()
+{
+    Discount = Quantity switch
+    {
+        >= 10 and <= 20 => 0.20m,
+        >= 4            => 0.10m,
+        _               => 0.00m
+    };
+
+    if (Quantity > 20)
+        throw new DomainException("Cannot sell more than 20 identical items.");
+
+    TotalAmount = UnitPrice * Quantity * (1 - Discount);
+}</pre>
+
+  <h3>Sale and Item Cancellation</h3>
+  <p>Sales and individual items can be cancelled. Cancellation is represented via domain events, ensuring full traceability:</p>
+
+  <pre>// Cancel the whole sale → SaleCancelledEvent
+// Cancel a specific item → ItemCancelledEvent (item stays in the list, IsCancelled = true)
+sale.CancelItem(itemId);   // validates existence, sets IsCancelled, recalculates the total</pre>
+
+  <h3>Total Consistency</h3>
+  <p>The <code>CalculateTotals()</code> method recalculates the <code>TotalAmount</code> of the whole sale by summing only non-cancelled items. It is called on every write operation before the commit:</p>
+
+  <pre>public void CalculateTotals()
+{
+    foreach (var item in Items.Where(i =&gt; !i.IsCancelled))
+        item.ApplyDiscount();
+
+    TotalAmount = Items
+        .Where(i =&gt; !i.IsCancelled)
+        .Sum(i =&gt; i.TotalAmount);
+}</pre>
+
+  <h3>Events Raised per Operation</h3>
+  <table>
+    <tr><th>Operation</th><th>Event(s) Raised</th></tr>
+    <tr><td>POST /api/sales</td><td>SaleCreatedEvent</td></tr>
+    <tr><td>PUT /api/sales/{id}</td><td>SaleModifiedEvent + ItemCancelledEvent (per cancelled item)</td></tr>
+    <tr><td>DELETE /api/sales/{id}</td><td>SaleCancelledEvent</td></tr>
+    <tr><td>POST /api/users</td><td>UserRegisteredEvent</td></tr>
+  </table>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     DECISION SUMMARY TABLE
+     ══════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num">–</div>
+    <div class="section-info">
+      <div class="section-category">Synthesis</div>
+      <div class="section-title">Technical Decision Summary Table</div>
+      <div class="section-lead">Every architectural choice consolidated with rationale and considered alternatives</div>
+    </div>
+  </div>
+
+  <table class="decision-table">
+    <tr>
+      <th>Decision</th>
+      <th>Adopted Choice</th>
+      <th>Considered Alternative</th>
+      <th>Rationale</th>
+    </tr>
+    <tr>
+      <td><strong>Architecture</strong></td>
+      <td>Clean Architecture + DDD</td>
+      <td>Simple MVC</td>
+      <td>Separation of concerns, testability, independent evolution of layers</td>
+    </tr>
+    <tr>
+      <td><strong>Command Pattern</strong></td>
+      <td>CQRS via MediatR</td>
+      <td>Service Layer</td>
+      <td>Decouples reads from writes, enables a behavior pipeline, cohesive handlers</td>
+    </tr>
+    <tr>
+      <td><strong>Data Access</strong></td>
+      <td>Repository Pattern + EF Core</td>
+      <td>Dapper / direct ORM</td>
+      <td>Testable abstraction, automatic migrations, type-safe LINQ</td>
+    </tr>
+    <tr>
+      <td><strong>Unit of Work</strong></td>
+      <td>IUnitOfWork + CommitAsync</td>
+      <td>SaveChanges in the repository</td>
+      <td>Single commit point, explicit transaction control in the handler</td>
+    </tr>
+    <tr>
+      <td><strong>Messaging</strong></td>
+      <td>Rebus + RabbitMQ</td>
+      <td>MediatR Notifications / NServiceBus</td>
+      <td>Pluggable transport (InMemory in tests), code decoupled from the broker</td>
+    </tr>
+    <tr>
+      <td><strong>Event Store</strong></td>
+      <td>MongoDB (DomainEventDocument)</td>
+      <td>Log only / PostgreSQL Event Table</td>
+      <td>Flexible schema for heterogeneous events, immutable audit trail</td>
+    </tr>
+    <tr>
+      <td><strong>Event Composition</strong></td>
+      <td>Decorator (Mongo → Logging → Rebus)</td>
+      <td>Single class with multiple responsibilities</td>
+      <td>SRP: each decorator has a single responsibility; composition without inheritance</td>
+    </tr>
+    <tr>
+      <td><strong>Authentication</strong></td>
+      <td>JWT HS256 + BCrypt</td>
+      <td>Session / external OAuth</td>
+      <td>Stateless, horizontally scalable, secure with a key >= 32 bytes</td>
+    </tr>
+    <tr>
+      <td><strong>IoC / DI</strong></td>
+      <td>IoC module with IModuleInitializer</td>
+      <td>Direct registrations in Program.cs</td>
+      <td>Clean Program.cs, independent modules, eases startup tests</td>
+    </tr>
+    <tr>
+      <td><strong>Integration Tests</strong></td>
+      <td>Testcontainers + real PostgreSQL</td>
+      <td>SQLite in-memory</td>
+      <td>Avoids divergence between SQLite and production PostgreSQL behavior</td>
+    </tr>
+    <tr>
+      <td><strong>Container Sharing</strong></td>
+      <td>ICollectionFixture (single container)</td>
+      <td>One container per test class</td>
+      <td>Reduces CI time from ~120s to ~15s for 41 integration tests</td>
+    </tr>
+    <tr>
+      <td><strong>Event Resilience</strong></td>
+      <td>Polly exponential retry (3×)</td>
+      <td>No retry / Circuit Breaker</td>
+      <td>Handles transient network/broker failures without losing the event</td>
+    </tr>
+    <tr>
+      <td><strong>Migrations</strong></td>
+      <td>IDesignTimeDbContextFactory in ORM</td>
+      <td>Migrations in WebApi</td>
+      <td>ORM owns the schema; WebApi need not reference EF Core directly</td>
+    </tr>
+    <tr>
+      <td><strong>CI/CD</strong></td>
+      <td>GitHub Actions (multi-job)</td>
+      <td>Jenkins / GitLab CI</td>
+      <td>Native to the GitHub repository, zero extra infrastructure, conditional Docker push</td>
+    </tr>
+    <tr>
+      <td><strong>Versioning</strong></td>
+      <td>SemVer + Conventional Commits</td>
+      <td>Date-based versions</td>
+      <td>Automatic changelog, clarity on the nature of a change (breaking vs minor vs patch)</td>
+    </tr>
+  </table>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     FAQ
+     ══════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num">–</div>
+    <div class="section-info">
+      <div class="section-category">Common Questions</div>
+      <div class="section-title">Frequently Asked Questions (FAQ)</div>
+      <div class="section-lead">Answers to the main questions about the project's choices</div>
+    </div>
+  </div>
+
+  <h4>❓ Why Rebus instead of using RabbitMQ.Client directly?</h4>
+  <p>Rebus provides a transport abstraction — the same publishing code works with <code>InMemoryTransport</code> (tests), RabbitMQ (production) or any other supported backend. Switching brokers requires only a configuration change, not a code change.</p>
+
+  <h4>❓ Why MongoDB for events and not a PostgreSQL table?</h4>
+  <p>Domain events are heterogeneous documents — each type has a different payload. MongoDB accommodates this naturally with a flexible schema. In addition, MongoDB is an explicit requirement of the challenge as a second database.</p>
+
+  <h4>❓ Is Redis required?</h4>
+  <p>No. Redis was never a requirement of the challenge specification. The docker-compose provisions only PostgreSQL, MongoDB and RabbitMQ. The README was updated to remove any earlier, incorrect mention of Redis.</p>
+
+  <h4>❓ Why Testcontainers instead of a dedicated test database?</h4>
+  <p>Testcontainers removes environment dependencies — any machine with Docker can run the tests. The PostgreSQL database starts on demand and is destroyed after the tests, leaving no residual state and requiring no manual setup.</p>
+
+  <h4>❓ Why <code>ICollectionFixture</code> instead of <code>IClassFixture</code>?</h4>
+  <p>With <code>IClassFixture</code>, each test class starts and destroys its own container — 41 start/stop cycles. With <code>ICollectionFixture</code>, a single container serves the entire integration test collection, drastically reducing the total time.</p>
+
+  <h4>❓ Why the Decorator instead of a single EventPublisher with multiple responsibilities?</h4>
+  <p>SRP (Single Responsibility Principle). <code>MongoEventPublisher</code> only persists to MongoDB; <code>LoggingEventPublisher</code> only logs; <code>RebusEventPublisher</code> only publishes to the bus. Adding or removing a behavior (e.g. adding an event cache) requires creating a decorator, not modifying existing code (OCP).</p>
+
+  <h4>❓ How does the OWASP A01 ownership check work?</h4>
+  <p>The JWT's <code>NameIdentifier</code> claim is extracted by the authentication middleware and compared with the route id (<code>{id}</code>). If they differ, it returns 403 Forbidden before running any business logic. This prevents user A from changing user B's data even with a valid token.</p>
+
+  <h4>❓ Does the 93% coverage include all projects?</h4>
+  <p>No — intentionally. The scope covers <strong>Domain</strong> and <strong>Application</strong>, which concentrate 100% of the business logic. ORM (EF Core repositories) and WebApi (controllers) are covered by the integration and functional tests, which run against a real database.</p>
+
+  <h4>❓ How do I reproduce the full environment locally?</h4>
+  <pre>git clone https://github.com/raphaelfernandesribeiro/desafio-tecnico
+cd desafio-tecnico/template/backend
+docker-compose up -d          # PostgreSQL + MongoDB + RabbitMQ
+dotnet run --project src/Ambev.DeveloperEvaluation.WebApi</pre>
+</div>
+
+<!-- Footer -->
+<div style="padding: 40px 72px; background: var(--primary); color: rgba(255,255,255,0.6); font-size: 8.5pt; display: flex; justify-content: space-between; margin-top: 0;">
+  <span>DeveloperStore — Technical Decisions v2.0</span>
+  <span>Ambev Developer Evaluation · Senior Level · 2026</span>
+  <span>github.com/raphaelfernandesribeiro/desafio-tecnico</span>
+</div>
+
+</body>
+</html>
