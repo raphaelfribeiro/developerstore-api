@@ -26,97 +26,98 @@
 
 <div align="center">
 
-> **Desafio Técnico — Developer Evaluation**
+> **Technical Challenge — Developer Evaluation**
 >
-> API RESTful para gestão de vendas, carrinhos e produtos com arquitetura DDD e CQRS.
+> RESTful API for managing sales, carts and products with a DDD and CQRS architecture.
 
 </div>
 
 ---
 
-## Índice
+## Table of Contents
 
-- [Visão Geral](#visão-geral)
-- [Tecnologias](#tecnologias)
-- [Arquitetura](#arquitetura)
-- [Regras de Negócio](#regras-de-negócio)
-- [Como Executar](#como-executar)
+- [Overview](#overview)
+- [Technologies](#technologies)
+- [Architecture](#architecture)
+- [Business Rules](#business-rules)
+- [How to Run](#how-to-run)
+- [Automated Setup Script](#automated-setup-script)
 - [Endpoints](#endpoints)
-- [Testes](#testes)
-- [Estrutura do Projeto](#estrutura-do-projeto)
-- [Decisões Técnicas](#decisões-técnicas)
+- [Tests](#tests)
+- [Project Structure](#project-structure)
+- [Technical Decisions](#technical-decisions)
 
 ---
 
-## Visão Geral
+## Overview
 
-O **DeveloperStore API** é uma API RESTful completa para gestão de um sistema de vendas, implementando:
+The **DeveloperStore API** is a complete RESTful API for managing a sales system, implementing:
 
-- **CRUD completo** de Vendas, Carrinhos e Produtos
-- **Regras de negócio de desconto** por quantidade de itens
-- **Eventos de domínio** publicados a cada operação relevante
-- **Autenticação JWT** em todos os endpoints protegidos
-- **Paginação e filtros** em todos os endpoints de listagem
-- **~93% de cobertura** nos testes unitários (240 testes)
+- **Full CRUD** for Sales, Carts and Products
+- **Quantity-based discount business rules** by number of items
+- **Domain events** published on every relevant operation
+- **JWT authentication** on all protected endpoints
+- **Pagination and filtering** on all listing endpoints
+- **~93% coverage** in the unit tests (240 tests)
 
 ---
 
-## Tecnologias
+## Technologies
 
 ### Backend
-| Tecnologia | Versão | Uso |
+| Technology | Version | Usage |
 |---|---|---|
-| ![.NET](https://img.shields.io/badge/.NET-8.0-512BD4?style=flat&logo=dotnet) | 8.0 | Framework principal |
-| ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-13-4169E1?style=flat&logo=postgresql) | 13 | Banco de dados relacional |
+| ![.NET](https://img.shields.io/badge/.NET-8.0-512BD4?style=flat&logo=dotnet) | 8.0 | Main framework |
+| ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-13-4169E1?style=flat&logo=postgresql) | 13 | Relational database |
 | ![EF Core](https://img.shields.io/badge/EF_Core-8.0-512BD4?style=flat&logo=dotnet) | 8.0 | ORM + Migrations |
 | ![MediatR](https://img.shields.io/badge/MediatR-12.4-512BD4?style=flat&logo=dotnet) | 12.4 | CQRS / Mediator pattern |
-| ![AutoMapper](https://img.shields.io/badge/AutoMapper-15.1.3-BE3C28?style=flat&logo=dotnet) | 15.1.3 | Mapeamento de objetos |
-| ![FluentValidation](https://img.shields.io/badge/FluentValidation-11.x-00B4AB?style=flat&logo=dotnet) | 11.x | Validação de comandos |
-| ![Serilog](https://img.shields.io/badge/Serilog-8.x-EF5B25?style=flat&logo=dotnet) | 8.x | Logging estruturado |
-| ![Polly](https://img.shields.io/badge/Polly-8.x-FF6B35?style=flat&logo=dotnet) | 8.x | Retry policy nos eventos |
-| ![Swagger](https://img.shields.io/badge/Swagger-OpenAPI_3.0-85EA2D?style=flat&logo=swagger&logoColor=black) | 6.x | Documentação da API |
+| ![AutoMapper](https://img.shields.io/badge/AutoMapper-15.1.3-BE3C28?style=flat&logo=dotnet) | 15.1.3 | Object mapping |
+| ![FluentValidation](https://img.shields.io/badge/FluentValidation-11.x-00B4AB?style=flat&logo=dotnet) | 11.x | Command validation |
+| ![Serilog](https://img.shields.io/badge/Serilog-8.x-EF5B25?style=flat&logo=dotnet) | 8.x | Structured logging |
+| ![Polly](https://img.shields.io/badge/Polly-8.x-FF6B35?style=flat&logo=dotnet) | 8.x | Retry policy for events |
+| ![Swagger](https://img.shields.io/badge/Swagger-OpenAPI_3.0-85EA2D?style=flat&logo=swagger&logoColor=black) | 6.x | API documentation |
 
-### Testes
-| Tecnologia | Versão | Uso |
+### Tests
+| Technology | Version | Usage |
 |---|---|---|
-| ![xUnit](https://img.shields.io/badge/xUnit-2.9-512BD4?style=flat&logo=dotnet) | 2.9 | Framework de testes (Unit, Integration, Functional) |
-| ![Bogus](https://img.shields.io/badge/Bogus-35.6-512BD4?style=flat&logo=dotnet) | 35.6 | Geração de dados falsos (Unit) |
+| ![xUnit](https://img.shields.io/badge/xUnit-2.9-512BD4?style=flat&logo=dotnet) | 2.9 | Test framework (Unit, Integration, Functional) |
+| ![Bogus](https://img.shields.io/badge/Bogus-35.6-512BD4?style=flat&logo=dotnet) | 35.6 | Fake data generation (Unit) |
 | ![NSubstitute](https://img.shields.io/badge/NSubstitute-5.1-512BD4?style=flat&logo=dotnet) | 5.1 | Mocking (Unit) |
-| ![FluentAssertions](https://img.shields.io/badge/FluentAssertions-6.12-00B4AB?style=flat&logo=dotnet) | 6.12 | Asserções expressivas (todos os projetos) |
-| ![MockQueryable](https://img.shields.io/badge/MockQueryable-7.0-512BD4?style=flat&logo=dotnet) | 7.0 | Mock de IQueryable async (Unit) |
-| ![Testcontainers](https://img.shields.io/badge/Testcontainers-3.10-2496ED?style=flat&logo=docker) | 3.10 | PostgreSQL real nos testes Integration e Functional |
+| ![FluentAssertions](https://img.shields.io/badge/FluentAssertions-6.12-00B4AB?style=flat&logo=dotnet) | 6.12 | Expressive assertions (all projects) |
+| ![MockQueryable](https://img.shields.io/badge/MockQueryable-7.0-512BD4?style=flat&logo=dotnet) | 7.0 | Async IQueryable mocking (Unit) |
+| ![Testcontainers](https://img.shields.io/badge/Testcontainers-3.10-2496ED?style=flat&logo=docker) | 3.10 | Real PostgreSQL in Integration and Functional tests |
 
-### Infraestrutura e DevOps
-| Tecnologia | Versão | Uso |
+### Infrastructure and DevOps
+| Technology | Version | Usage |
 |---|---|---|
-| ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=flat&logo=docker) | - | Containerização |
+| ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=flat&logo=docker) | - | Containerization |
 | ![MongoDB](https://img.shields.io/badge/MongoDB-8.0-47A248?style=flat&logo=mongodb&logoColor=white) | 8.0 | NoSQL (event store) |
 | ![RabbitMQ](https://img.shields.io/badge/RabbitMQ-3.13-FF6600?style=flat&logo=rabbitmq&logoColor=white) | 3.13 | Message broker (Rebus transport) |
-| ![Rebus](https://img.shields.io/badge/Rebus-8.9-512BD4?style=flat&logo=dotnet&logoColor=white) | 8.9 | Service bus — publicação e consumo de domain events |
-| ![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-CI/CD-2088FF?style=flat&logo=githubactions&logoColor=white) | - | Build, testes, cobertura e push de imagem Docker |
+| ![Rebus](https://img.shields.io/badge/Rebus-8.9-512BD4?style=flat&logo=dotnet&logoColor=white) | 8.9 | Service bus — publishing and consuming domain events |
+| ![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-CI/CD-2088FF?style=flat&logo=githubactions&logoColor=white) | - | Build, tests, coverage and Docker image push |
 
 ---
 
-## Arquitetura
+## Architecture
 
-O projeto segue **Domain-Driven Design (DDD)** com **CQRS** via MediatR:
+The project follows **Domain-Driven Design (DDD)** with **CQRS** via MediatR:
 
 ```
 src/
-├── Ambev.DeveloperEvaluation.Domain        # Entidades, Eventos, Repositórios, Validators
+├── Ambev.DeveloperEvaluation.Domain        # Entities, Events, Repositories, Validators
 ├── Ambev.DeveloperEvaluation.Application   # Commands, Queries, Handlers, Profiles
-├── Ambev.DeveloperEvaluation.ORM           # DbContext, Repositórios, Migrations, Events
-├── Ambev.DeveloperEvaluation.IoC           # Registro de dependências (DependencyResolver)
+├── Ambev.DeveloperEvaluation.ORM           # DbContext, Repositories, Migrations, Events
+├── Ambev.DeveloperEvaluation.IoC           # Dependency registration (DependencyResolver)
 ├── Ambev.DeveloperEvaluation.WebApi        # Controllers, Middleware, Program.cs
-└── Ambev.DeveloperEvaluation.Common        # Segurança, Logging, HealthChecks, Validação
+└── Ambev.DeveloperEvaluation.Common        # Security, Logging, HealthChecks, Validation
 
 tests/
-├── Ambev.DeveloperEvaluation.Unit          # Testes unitários (~93% cobertura, 240 testes)
-├── Ambev.DeveloperEvaluation.Integration   # Testes de integração com Testcontainers (40 testes)
-└── Ambev.DeveloperEvaluation.Functional    # Testes funcionais
+├── Ambev.DeveloperEvaluation.Unit          # Unit tests (~93% coverage, 240 tests)
+├── Ambev.DeveloperEvaluation.Integration   # Integration tests with Testcontainers (40 tests)
+└── Ambev.DeveloperEvaluation.Functional    # Functional tests
 ```
 
-### Fluxo de uma requisição
+### Request flow
 
 ```
 HTTP Request
@@ -129,7 +130,7 @@ MediatR  →  Command / Query
      │
      ▼
 Handler  (Application)
-     │                         │  (operações de escrita)
+     │                         │  (write operations)
      ▼                         ▼
 Repository  (ORM)        Domain Events
      │                         │
@@ -139,110 +140,177 @@ EF Core → PostgreSQL    EventPublisher
                           → Rebus → RabbitMQ
 ```
 
-### Padrões utilizados
+### Patterns used
 
-| Padrão | Implementação |
+| Pattern | Implementation |
 |---|---|
-| **CQRS** | Commands e Queries separados via MediatR |
-| **Repository Pattern** | Abstração do acesso a dados |
+| **CQRS** | Separate Commands and Queries via MediatR |
+| **Repository Pattern** | Data access abstraction |
 | **Domain Events** | `SaleCreatedEvent`, `SaleModifiedEvent`, `SaleCancelledEvent`, `ItemCancelledEvent` |
 | **Specification Pattern** | `ActiveUserSpecification` |
-| **External Identity** | Cart referencia Product apenas pelo Id (domínios desacoplados) |
-| **Retry Pattern** | Polly com 3 tentativas e exponential backoff nos eventos |
-| **GitFlow** | Feature branches a partir de `develop`; merge `--no-ff`; tipos: `feature/`, `fix/`, `docs/`, `refactor/`, `chore/` |
-| **Conventional Commits** | Prefixos semânticos: `feat:`, `fix:`, `test:`, `refactor:`, `chore:`, `docs:` — histórico auditável e compatível com ferramentas de changelog |
+| **External Identity** | Cart references Product by Id only (decoupled domains) |
+| **Retry Pattern** | Polly with 3 attempts and exponential backoff on events |
+| **GitFlow** | Feature branches from `develop`; `--no-ff` merges; types: `feature/`, `fix/`, `docs/`, `refactor/`, `chore/` |
+| **Conventional Commits** | Semantic prefixes: `feat:`, `fix:`, `test:`, `refactor:`, `chore:`, `docs:` — auditable history compatible with changelog tools |
 
 ---
 
-## Regras de Negócio
+## Business Rules
 
-### Descontos por quantidade de itens idênticos
+### Discounts by quantity of identical items
 
-| Quantidade | Desconto | Exemplo (R$ 100/un) |
+| Quantity | Discount | Example ($100/unit) |
 |---|---|---|
-| Abaixo de 4 itens | Sem desconto | 3 × R$100 = **R$300** |
-| 4 a 9 itens | **10%** | 5 × R$100 × 0.90 = **R$450** |
-| 10 a 20 itens | **20%** | 10 × R$100 × 0.80 = **R$800** |
-| Acima de 20 itens | ❌ Não permitido | — |
+| Fewer than 4 items | No discount | 3 × $100 = **$300** |
+| 4 to 9 items | **10%** | 5 × $100 × 0.90 = **$450** |
+| 10 to 20 items | **20%** | 10 × $100 × 0.80 = **$800** |
+| More than 20 items | ❌ Not allowed | — |
 
-### Eventos de domínio publicados
+### Published domain events
 
-| Evento | Quando é publicado |
+| Event | When it is published |
 |---|---|
-| `SaleCreatedEvent` | Ao criar uma venda |
-| `SaleModifiedEvent` | Ao atualizar uma venda |
-| `SaleCancelledEvent` | Ao deletar/cancelar uma venda |
-| `ItemCancelledEvent` | Ao cancelar um item da venda |
+| `SaleCreatedEvent` | When a sale is created |
+| `SaleModifiedEvent` | When a sale is updated |
+| `SaleCancelledEvent` | When a sale is deleted/cancelled |
+| `ItemCancelledEvent` | When a sale item is cancelled |
 
 ---
 
-## Como Executar
+## How to Run
 
-### Pré-requisitos
+### Prerequisites
 
 ![Docker](https://img.shields.io/badge/Docker_Desktop-Required-2496ED?style=flat&logo=docker)
 ![.NET](https://img.shields.io/badge/.NET_8_SDK-Optional-512BD4?style=flat&logo=dotnet)
 
-### 1. Clone o repositório
+### 1. Clone the repository
 
 ```bash
 git clone https://github.com/raphaelfernandesribeiro/desafio-tecnico.git
 cd desafio-tecnico/template/backend
-# O código-fonte está em template/backend — estrutura pré-configurada fornecida pelo desafio
+# The source code lives in template/backend — pre-configured structure provided by the challenge
 ```
 
-### 2. Suba os containers
+### 2. Start the containers
 
 ```bash
 docker-compose up --build -d
 ```
 
-> As migrations do EF Core são aplicadas automaticamente no startup — nenhum comando `dotnet ef database update` é necessário.
+> EF Core migrations are applied automatically on startup — no `dotnet ef database update` command is required.
 
-| Serviço | URL |
+| Service | URL |
 |---|---|
-| **API / Swagger UI** | http://localhost:8080 (Swagger na raiz `/`) |
+| **API / Swagger UI** | http://localhost:8080 (Swagger at root `/`) |
 | **Health Check** | http://localhost:8080/health |
 | **PostgreSQL** | localhost:5432 |
 | **MongoDB** | localhost:27017 |
 
-### 3. Verifique os logs
+### 3. Check the logs
 
 ```bash
 docker logs ambev_developer_evaluation_webapi -f
 ```
 
-### 4. Pare os containers
+### 4. Stop the containers
 
 ```bash
 docker-compose down
 ```
 
-### Variáveis de ambiente
+### Environment variables
 
-O projeto vem com valores padrão funcionais. Para personalizar, copie o arquivo de exemplo e edite conforme seu ambiente:
+The project ships with working default values. To customize, copy the example file and edit it for your environment:
 
 ```bash
 cp .env.example .env
-# edite .env com suas credenciais
+# edit .env with your credentials
 docker-compose up --build -d
 ```
 
-| Variável | Padrão | Descrição |
+| Variable | Default | Description |
 |---|---|---|
-| `POSTGRES_DB` | `developer_evaluation` | Nome do banco PostgreSQL |
-| `POSTGRES_USER` | `developer` | Usuário do PostgreSQL |
-| `POSTGRES_PASSWORD` | `ev@luAt10n` | Senha do PostgreSQL |
-| `MONGO_USER` | `developer` | Usuário do MongoDB |
-| `MONGO_PASSWORD` | `ev@luAt10n` | Senha do MongoDB |
-| `JWT_SECRET_KEY` | `YourSuperSecretKey...` | Chave de assinatura JWT (mín. 32 chars) ⚠️ |
-| `JWT_ISSUER` | `AmbevDeveloperEvaluation` | Issuer do token JWT |
-| `JWT_AUDIENCE` | `AmbevDeveloperEvaluationUsers` | Audience do token JWT |
-| `JWT_EXPIRY_MINUTES` | `60` | Validade do token em minutos |
+| `POSTGRES_DB` | `developer_evaluation` | PostgreSQL database name |
+| `POSTGRES_USER` | `developer` | PostgreSQL user |
+| `POSTGRES_PASSWORD` | `ev@luAt10n` | PostgreSQL password |
+| `MONGO_USER` | `developer` | MongoDB user |
+| `MONGO_PASSWORD` | `ev@luAt10n` | MongoDB password |
+| `JWT_SECRET_KEY` | `YourSuperSecretKey...` | JWT signing key (min. 32 chars) ⚠️ |
+| `JWT_ISSUER` | `AmbevDeveloperEvaluation` | JWT token issuer |
+| `JWT_AUDIENCE` | `AmbevDeveloperEvaluationUsers` | JWT token audience |
+| `JWT_EXPIRY_MINUTES` | `60` | Token validity in minutes |
 
-> ⚠️ **Produção:** Substitua `JWT_SECRET_KEY` por uma chave forte de pelo menos 32 caracteres gerada aleatoriamente. O app valida o tamanho mínimo na inicialização e rejeita chaves curtas.
+> ⚠️ **Production:** Replace `JWT_SECRET_KEY` with a strong, randomly generated key of at least 32 characters. The app validates the minimum length on startup and rejects short keys.
 
-> Para rodar sem Docker, copie `appsettings.json`, ajuste `DefaultConnection` para `Host=localhost` e execute `dotnet run` na pasta `src/Ambev.DeveloperEvaluation.WebApi`.
+> To run without Docker, copy `appsettings.json`, set `DefaultConnection` to `Host=localhost` and run `dotnet run` in the `src/Ambev.DeveloperEvaluation.WebApi` folder.
+
+---
+
+## Automated Setup Script
+
+For a one-shot, end-to-end run of the entire pipeline — from prerequisite checks through Docker teardown — the repository ships a PowerShell script at [`template/backend/scripts/setup.ps1`](template/backend/scripts/setup.ps1). It bootstraps the development environment from zero, runs every test suite, builds and starts the Docker stack, executes end-to-end API tests, and writes a per-step report under `setup-reports/<run-id>/`. At the end it prints a rich summary table.
+
+### Requirements
+
+| Tool | Required for |
+|---|---|
+| .NET SDK 8.0+ | Build, restore and tests |
+| Docker Desktop | Docker build/up, integration & functional tests |
+| Python 3.x | `ApiTest` step only (end-to-end API test) |
+| `reportgenerator` | Coverage report — **auto-installed** by the Prerequisites step |
+
+### Steps
+
+The script runs 11 steps in order:
+
+| # | Step | What it does |
+|---|---|---|
+| 1 | `Prerequisites` | Verify `dotnet`, `docker`, `python`, `reportgenerator` |
+| 2 | `Restore` | `dotnet restore` |
+| 3 | `Build` | `dotnet build --configuration Release` |
+| 4 | `UnitTests` | `dotnet test` (unit suite only) |
+| 5 | `Coverage` | Unit tests + HTML coverage via `reportgenerator` |
+| 6 | `IntegrationTests` | `dotnet test` (integration suite, Testcontainers) |
+| 7 | `FunctionalTests` | `dotnet test` (functional suite) |
+| 8 | `DockerBuild` | `docker-compose build` |
+| 9 | `DockerUp` | `docker-compose up -d` + wait for API |
+| 10 | `ApiTest` | `python scripts/test_api.py` |
+| 11 | `DockerDown` | `docker-compose down -v` |
+
+### Usage
+
+```powershell
+cd template/backend/scripts
+
+# Full run (all 11 steps), tearing down containers at the end
+.\setup.ps1
+
+# Full run, but keep containers running afterwards (skip DockerDown)
+.\setup.ps1 -KeepContainers
+
+# Run a single step — by number or by name
+.\setup.ps1 -Step 4
+.\setup.ps1 -Step Coverage
+
+# Run from a given step to the end (-From)
+.\setup.ps1 -Step 8 -From                       # DockerBuild → DockerDown
+.\setup.ps1 -Step DockerBuild -From -KeepContainers
+
+# Label this execution (report sub-folder); defaults to a timestamp
+.\setup.ps1 -RunId my-run-label
+```
+
+| Parameter | Description |
+|---|---|
+| `-Step <name\|number>` | Run a single step. Accepts the step name (`UnitTests`) or number (`4`). Omit (or pass `All`) to run everything. |
+| `-From` | Combined with `-Step`, runs from that step through the end instead of only that single step. |
+| `-KeepContainers` | Skips the `DockerDown` step at the end of a full or `-From` run. |
+| `-RunId <label>` | Optional label for the report sub-folder. Defaults to a timestamp. |
+
+> **Exit codes:** `0` = all steps passed · `1` = one or more steps failed. Each step produces a dedicated report file under `setup-reports/<run-id>/`, plus a `00-summary.txt` overview.
+
+> If your PowerShell execution policy blocks the script, run it with `powershell -ExecutionPolicy Bypass -File .\setup.ps1`.
 
 ---
 
@@ -250,55 +318,55 @@ docker-compose up --build -d
 
 ### 🔐 Auth
 
-| Método | Rota | Descrição | Auth |
+| Method | Route | Description | Auth |
 |---|---|---|---|
-| `POST` | `/api/auth/login` | Autenticar usuário (campo: `username`) | ❌ |
+| `POST` | `/api/auth/login` | Authenticate user (field: `username`) | ❌ |
 
 ### 👤 Users
 
-| Método | Rota | Descrição | Auth |
+| Method | Route | Description | Auth |
 |---|---|---|---|
-| `POST` | `/api/users` | Criar usuário (schema aninhado: `name`, `address`) | ❌ |
-| `GET` | `/api/users` | Listar usuários (paginado: `_page`, `_size`, `_order`) | ✅ |
-| `GET` | `/api/users/{id}` | Buscar usuário por ID | ✅ |
-| `PUT` | `/api/users/{id}` | Atualizar perfil (owner ou Admin) | ✅ |
-| `PATCH` | `/api/users/{id}/role` | Alterar role/status do usuário | ✅ Admin |
-| `DELETE` | `/api/users/{id}` | Deletar usuário | ✅ |
+| `POST` | `/api/users` | Create user (nested schema: `name`, `address`) | ❌ |
+| `GET` | `/api/users` | List users (paginated: `_page`, `_size`, `_order`) | ✅ |
+| `GET` | `/api/users/{id}` | Get user by ID | ✅ |
+| `PUT` | `/api/users/{id}` | Update profile (owner or Admin) | ✅ |
+| `PATCH` | `/api/users/{id}/role` | Change user role/status | ✅ Admin |
+| `DELETE` | `/api/users/{id}` | Delete user | ✅ |
 
 ### 📦 Products
 
-| Método | Rota | Descrição | Auth |
+| Method | Route | Description | Auth |
 |---|---|---|---|
-| `POST` | `/api/products` | Criar produto | ✅ |
-| `GET` | `/api/products` | Listar produtos (paginado) | ✅ |
-| `GET` | `/api/products/{id}` | Buscar produto por ID | ✅ |
-| `GET` | `/api/products/categories` | Listar categorias | ✅ |
-| `GET` | `/api/products/category/{category}` | Listar por categoria | ✅ |
-| `PUT` | `/api/products/{id}` | Atualizar produto | ✅ |
-| `DELETE` | `/api/products/{id}` | Deletar produto | ✅ |
+| `POST` | `/api/products` | Create product | ✅ |
+| `GET` | `/api/products` | List products (paginated) | ✅ |
+| `GET` | `/api/products/{id}` | Get product by ID | ✅ |
+| `GET` | `/api/products/categories` | List categories | ✅ |
+| `GET` | `/api/products/category/{category}` | List by category | ✅ |
+| `PUT` | `/api/products/{id}` | Update product | ✅ |
+| `DELETE` | `/api/products/{id}` | Delete product | ✅ |
 
 ### 🛒 Carts
 
-| Método | Rota | Descrição | Auth |
+| Method | Route | Description | Auth |
 |---|---|---|---|
-| `POST` | `/api/carts` | Criar carrinho | ✅ |
-| `GET` | `/api/carts` | Listar carrinhos (paginado) | ✅ |
-| `GET` | `/api/carts/{id}` | Buscar carrinho por ID | ✅ |
-| `PUT` | `/api/carts/{id}` | Atualizar carrinho | ✅ |
-| `DELETE` | `/api/carts/{id}` | Deletar carrinho | ✅ |
+| `POST` | `/api/carts` | Create cart | ✅ |
+| `GET` | `/api/carts` | List carts (paginated) | ✅ |
+| `GET` | `/api/carts/{id}` | Get cart by ID | ✅ |
+| `PUT` | `/api/carts/{id}` | Update cart | ✅ |
+| `DELETE` | `/api/carts/{id}` | Delete cart | ✅ |
 
 ### 💰 Sales
 
-| Método | Rota | Descrição | Auth |
+| Method | Route | Description | Auth |
 |---|---|---|---|
-| `POST` | `/api/sales` | Criar venda | ✅ |
-| `GET` | `/api/sales` | Listar vendas (paginado) | ✅ |
-| `GET` | `/api/sales/{id}` | Buscar venda por ID | ✅ |
-| `PUT` | `/api/sales/{id}` | Atualizar venda | ✅ |
-| `PATCH` | `/api/sales/{id}/items/{itemId}/cancel` | Cancelar item | ✅ |
-| `DELETE` | `/api/sales/{id}` | Cancelar e deletar venda | ✅ |
+| `POST` | `/api/sales` | Create sale | ✅ |
+| `GET` | `/api/sales` | List sales (paginated) | ✅ |
+| `GET` | `/api/sales/{id}` | Get sale by ID | ✅ |
+| `PUT` | `/api/sales/{id}` | Update sale | ✅ |
+| `PATCH` | `/api/sales/{id}/items/{itemId}/cancel` | Cancel item | ✅ |
+| `DELETE` | `/api/sales/{id}` | Cancel and delete sale | ✅ |
 
-### Formato de resposta padrão (sucesso)
+### Standard response format (success)
 
 ```json
 {
@@ -308,7 +376,7 @@ docker-compose up --build -d
 }
 ```
 
-### Formato de resposta de erro
+### Error response format
 
 ```json
 {
@@ -318,10 +386,10 @@ docker-compose up --build -d
 }
 ```
 
-### Paginação e Ordenação
+### Pagination and Ordering
 
-Parâmetros de query com prefixo `_`:
-- `_page` (padrão: 1), `_size` (padrão: 10), `_order` (ex: `username desc, email asc`)
+Query parameters with the `_` prefix:
+- `_page` (default: 1), `_size` (default: 10), `_order` (e.g. `username desc, email asc`)
 
 ```json
 {
@@ -332,31 +400,31 @@ Parâmetros de query com prefixo `_`:
 }
 ```
 
-### Filtros
+### Filters
 
-Todos os parâmetros de filtro são opcionais e combináveis com `&` (AND).
+All filter parameters are optional and combinable with `&` (AND).
 
 #### `GET /api/users`
 
-| Parâmetro | Tipo | Descrição |
+| Parameter | Type | Description |
 |---|---|---|
-| `_page` | int | Página (padrão: 1) |
-| `_size` | int | Itens por página (padrão: 10) |
-| `_order` | string | Ordenação: `username asc`, `username desc`, `email asc`, `email desc` |
+| `_page` | int | Page (default: 1) |
+| `_size` | int | Items per page (default: 10) |
+| `_order` | string | Ordering: `username asc`, `username desc`, `email asc`, `email desc` |
 
-> Não possui filtros de campo — retorna todos os usuários paginados.
+> No field filters — returns all users paginated.
 
 #### `GET /api/products`
 
-| Parâmetro | Tipo | Descrição |
+| Parameter | Type | Description |
 |---|---|---|
-| `_page` | int | Página (padrão: 1) |
-| `_size` | int | Itens por página (padrão: 10) |
+| `_page` | int | Page (default: 1) |
+| `_size` | int | Items per page (default: 10) |
 | `_order` | string | `price asc`, `price desc`, `title asc`, `title desc` |
-| `title` | string | Correspondência exata ou parcial com wildcard `*` (`Samsung*`, `*phone`) |
-| `category` | string | Correspondência exata (case-insensitive): `electronics`, `jewelery`, etc. |
-| `_minPrice` | decimal | Preço mínimo (inclusive) |
-| `_maxPrice` | decimal | Preço máximo (inclusive) |
+| `title` | string | Exact or partial match with `*` wildcard (`Samsung*`, `*phone`) |
+| `category` | string | Exact match (case-insensitive): `electronics`, `jewelery`, etc. |
+| `_minPrice` | decimal | Minimum price (inclusive) |
+| `_maxPrice` | decimal | Maximum price (inclusive) |
 
 ```
 GET /api/products?category=electronics&_minPrice=100&title=Samsung*
@@ -364,14 +432,14 @@ GET /api/products?category=electronics&_minPrice=100&title=Samsung*
 
 #### `GET /api/carts`
 
-| Parâmetro | Tipo | Descrição |
+| Parameter | Type | Description |
 |---|---|---|
-| `_page` | int | Página (padrão: 1) |
-| `_size` | int | Itens por página (padrão: 10) |
-| `_order` | string | Ordenação por campo (padrão: data desc) |
-| `userId` | guid | Filtrar carrinhos de um usuário específico |
-| `_minDate` | datetime | Data mínima do carrinho (inclusive) |
-| `_maxDate` | datetime | Data máxima do carrinho (inclusive) |
+| `_page` | int | Page (default: 1) |
+| `_size` | int | Items per page (default: 10) |
+| `_order` | string | Order by field (default: date desc) |
+| `userId` | guid | Filter carts for a specific user |
+| `_minDate` | datetime | Minimum cart date (inclusive) |
+| `_maxDate` | datetime | Maximum cart date (inclusive) |
 
 ```
 GET /api/carts?userId=3fa85f64-5717-4562-b3fc-2c963f66afa6&_minDate=2024-01-01
@@ -379,15 +447,15 @@ GET /api/carts?userId=3fa85f64-5717-4562-b3fc-2c963f66afa6&_minDate=2024-01-01
 
 #### `GET /api/sales`
 
-| Parâmetro | Tipo | Descrição |
+| Parameter | Type | Description |
 |---|---|---|
-| `_page` | int | Página (padrão: 1) |
-| `_size` | int | Itens por página (padrão: 10) |
+| `_page` | int | Page (default: 1) |
+| `_size` | int | Items per page (default: 10) |
 | `_order` | string | `saledate asc`, `saledate desc`, `totalamount asc`, `totalamount desc`, `salenumber asc`, `salenumber desc` |
-| `customerName` | string | Correspondência parcial (contains) no nome do cliente |
-| `isCancelled` | bool | `true` para listar apenas vendas canceladas, `false` para ativas |
-| `_minDate` | datetime | Data mínima da venda (inclusive) |
-| `_maxDate` | datetime | Data máxima da venda (inclusive) |
+| `customerName` | string | Partial match (contains) on customer name |
+| `isCancelled` | bool | `true` to list only cancelled sales, `false` for active ones |
+| `_minDate` | datetime | Minimum sale date (inclusive) |
+| `_maxDate` | datetime | Maximum sale date (inclusive) |
 
 ```
 GET /api/sales?customerName=Test&isCancelled=false&_minDate=2024-01-01&_order=saledate desc
@@ -395,11 +463,11 @@ GET /api/sales?customerName=Test&isCancelled=false&_minDate=2024-01-01&_order=sa
 
 ---
 
-## Testes
+## Tests
 
-> **Estratégia:** Testes de **integração** verificam endpoints HTTP completos com banco real (Testcontainers) — validam contrato da API, autenticação e regras de negócio via HTTP. Testes **funcionais** rodam num container PostgreSQL **isolado** (sem estado compartilhado com integração) e focam exclusivamente nas regras de negócio críticas do domínio (tiers de desconto, limites de quantidade, cancelamento de item), garantindo que mudanças no código nunca quebrem a lógica central independentemente de detalhes de transporte.
+> **Strategy:** **Integration** tests verify complete HTTP endpoints against a real database (Testcontainers) — they validate the API contract, authentication and business rules over HTTP. **Functional** tests run on an **isolated** PostgreSQL container (no shared state with integration) and focus exclusively on the domain's critical business rules (discount tiers, quantity limits, item cancellation), ensuring that code changes never break the core logic regardless of transport details.
 
-### Testes Unitários
+### Unit Tests
 
 ```bash
 cd template/backend
@@ -414,22 +482,22 @@ dotnet test Ambev.DeveloperEvaluation.sln --filter "FullyQualifiedName~Unit"
 
 </div>
 
-### Gerar relatório de cobertura
+### Generate coverage report
 
 ```powershell
-# Instalar ferramenta (apenas uma vez)
+# Install the tool (once)
 dotnet tool install -g dotnet-reportgenerator-globaltool
 
-# Executar no Windows
+# Run on Windows
 .\coverage-report.ps1
 
-# Executar no Linux/Mac
+# Run on Linux/Mac
 ./coverage-report.sh
 ```
 
-Relatório HTML gerado em `coverage-report/index.html`.
+HTML report generated at `coverage-report/index.html`.
 
-### Testes de Integração
+### Integration Tests
 
 ```bash
 dotnet test Ambev.DeveloperEvaluation.sln --filter "FullyQualifiedName~Integration"
@@ -442,19 +510,19 @@ dotnet test Ambev.DeveloperEvaluation.sln --filter "FullyQualifiedName~Integrati
 
 </div>
 
-| Suite | Testes | Cobertura |
+| Suite | Tests | Coverage |
 |---|---|---|
-| Auth / Users | 7 | Registro, autenticação, JWT, 401 |
+| Auth / Users | 7 | Registration, authentication, JWT, 401 |
 | Users (ownership + admin role) | 8 | PUT ownership check (200/403/401), PUT role change (owner→403, admin→200), PATCH role (200/403/401/404) |
-| Products | 7 | CRUD completo, listagem paginada, 401 |
-| Sales | 8 | CRUD, regras de desconto (10%/20%), cancelamento de item, 401 |
-| Carts | 7 | CRUD completo, listagem paginada, 401 |
-| E2E | 3 | Fluxo completo: produto → carrinho → venda com desconto |
+| Products | 7 | Full CRUD, paginated listing, 401 |
+| Sales | 8 | CRUD, discount rules (10%/20%), item cancellation, 401 |
+| Carts | 7 | Full CRUD, paginated listing, 401 |
+| E2E | 3 | Full flow: product → cart → sale with discount |
 
-> ⚠️ Docker deve estar rodando — os testes sobem automaticamente um container PostgreSQL via **Testcontainers**.
-> Um único container é compartilhado entre todas as suites (`ICollectionFixture`) — inicialização rápida (~15s).
+> ⚠️ Docker must be running — the tests automatically spin up a PostgreSQL container via **Testcontainers**.
+> A single container is shared across all suites (`ICollectionFixture`) — fast startup (~15s).
 
-### Testes Funcionais
+### Functional Tests
 
 ```bash
 dotnet test Ambev.DeveloperEvaluation.sln --filter "FullyQualifiedName~Functional"
@@ -467,17 +535,17 @@ dotnet test Ambev.DeveloperEvaluation.sln --filter "FullyQualifiedName~Functiona
 
 </div>
 
-| Cenário | O que verifica |
+| Scenario | What it verifies |
 |---|---|
-| Discount tiers across all brackets | Sem desconto (3 itens), 10% (5 itens), 20% (15 itens) — todos em um único fluxo autenticado |
-| Maximum quantity enforcement | Venda com 21 itens é rejeitada com 400 (regra de negócio crítica) |
-| Item cancellation state | Cancelar item via PATCH marca o item como cancelado sem cancelar a venda |
+| Discount tiers across all brackets | No discount (3 items), 10% (5 items), 20% (15 items) — all in a single authenticated flow |
+| Maximum quantity enforcement | A sale with 21 items is rejected with 400 (critical business rule) |
+| Item cancellation state | Cancelling an item via PATCH marks the item as cancelled without cancelling the sale |
 
-> ⚠️ Docker deve estar rodando — os testes funcionais sobem um container PostgreSQL **isolado** do container de integração.
+> ⚠️ Docker must be running — functional tests spin up a PostgreSQL container **isolated** from the integration container.
 
 ---
 
-## Estrutura do Projeto
+## Project Structure
 
 ```
 template/backend/
@@ -493,15 +561,15 @@ template/backend/
 │   │   ├── Carts/             # Create, Get, GetList, Update, Delete
 │   │   ├── Products/          # Create, Get, GetList, Categories, Update, Delete
 │   │   ├── Users/             # Create, Get, GetList, Update, PatchUserRole, Delete
-│   │   └── Auth/              # AuthenticateUser (login por username)
+│   │   └── Auth/              # AuthenticateUser (login by username)
 │   ├── Ambev.DeveloperEvaluation.ORM/
 │   │   ├── Repositories/      # SaleRepository, CartRepository, ProductRepository, UserRepository
 │   │   ├── Services/          # RebusEventPublisher, LoggingEventPublisher (Polly retry), MongoEventPublisher (Decorator), MongoDbSettings, MongoDbExtensions
 │   │   ├── Services/Messaging # SaleCreatedEventHandler, SaleModifiedEventHandler, SaleCancelledEventHandler, ItemCancelledEventHandler (Rebus IHandleMessages)
 │   │   └── Migrations/        # InitialMigrations, AddSaleCartProduct, AddUserProfileFields
 │   ├── Ambev.DeveloperEvaluation.IoC/
-│   │   ├── DependencyResolver.cs          # Ponto central de registro de todos os módulos
-│   │   ├── IModuleInitializer.cs          # Contrato de módulo
+│   │   ├── DependencyResolver.cs          # Central registration point for all modules
+│   │   ├── IModuleInitializer.cs          # Module contract
 │   │   └── ModuleInitializers/            # ApplicationModuleInitializer, InfrastructureModuleInitializer, WebApiModuleInitializer
 │   ├── Ambev.DeveloperEvaluation.Common/
 │   │   ├── HealthChecks/      # HealthChecksExtension
@@ -518,78 +586,80 @@ template/backend/
     │   └── Infrastructure/    # LoggingEventPublisher tests, MongoEventPublisher tests, RebusEventPublisher tests
     ├── Ambev.DeveloperEvaluation.Integration/
     │   ├── Fixtures/          # IntegrationTestFactory (Testcontainers), BaseIntegrationTest
-    │   └── Features/          # Auth, Users, Products, Sales, Carts, E2E — 41 testes
+    │   └── Features/          # Auth, Users, Products, Sales, Carts, E2E — 41 tests
     └── Ambev.DeveloperEvaluation.Functional/
-        ├── Fixtures/          # FunctionalTestFactory (container isolado), BaseFunctionalTest
-        └── Scenarios/         # SalesBusinessRulesTests — 3 cenários de negócio
+        ├── Fixtures/          # FunctionalTestFactory (isolated container), BaseFunctionalTest
+        └── Scenarios/         # SalesBusinessRulesTests — 3 business scenarios
 ```
 
 ---
 
-## Pendências e Próximos Passos
+## Backlog and Next Steps
 
-O que seria evoluído com mais tempo:
+What would be evolved with more time:
 
-| Item | Descrição |
+| Item | Description |
 |---|---|
-| ~~**Message Broker real**~~ | ✅ Implementado: **Rebus 8.9 + RabbitMQ 3.13**. `RebusEventPublisher` é o inner publisher do decorator `MongoEventPublisher`. Em produção usa RabbitMQ (via `RabbitMq:ConnectionString`); em dev/testes usa transport InMemory automaticamente. Quatro `IHandleMessages<T>` handlers processam os eventos no mesmo processo. |
-| ~~**Testes unitários de Cart**~~ | ✅ Implementado: `CartHandlerTests` com 18 testes cobrindo Create, Get, GetList (paginação, filtros de data, userId, ordenação), Update e Delete |
-| ~~**Testes funcionais**~~ | ✅ Implementado: `Ambev.DeveloperEvaluation.Functional` com 3 cenários de negócio (tiers de desconto, limite de quantidade, cancelamento de item) |
-| **API versioning** | Versionamento de rotas (`/api/v1/`) para suportar evolução sem quebrar clientes |
-| **Rate limiting** | Throttling por IP/usuário nos endpoints públicos (auth, criação de usuário) |
-| ~~**CI/CD pipeline**~~ | ✅ Implementado: `.github/workflows/ci.yml` com build, testes unitários (coverage), integração e funcionais (Testcontainers), relatório de cobertura como artefato, e build + push condicional da imagem Docker |
+| ~~**Real message broker**~~ | ✅ Implemented: **Rebus 8.9 + RabbitMQ 3.13**. `RebusEventPublisher` is the inner publisher of the `MongoEventPublisher` decorator. In production it uses RabbitMQ (via `RabbitMq:ConnectionString`); in dev/tests it uses the InMemory transport automatically. Four `IHandleMessages<T>` handlers process the events in the same process. |
+| ~~**Cart unit tests**~~ | ✅ Implemented: `CartHandlerTests` with 18 tests covering Create, Get, GetList (pagination, date filters, userId, ordering), Update and Delete |
+| ~~**Functional tests**~~ | ✅ Implemented: `Ambev.DeveloperEvaluation.Functional` with 3 business scenarios (discount tiers, quantity limit, item cancellation) |
+| **API versioning** | Route versioning (`/api/v1/`) to support evolution without breaking clients |
+| **Rate limiting** | Per-IP/user throttling on public endpoints (auth, user creation) |
+| ~~**CI/CD pipeline**~~ | ✅ Implemented: `.github/workflows/ci.yml` with build, unit tests (coverage), integration and functional tests (Testcontainers), coverage report as an artifact, and conditional Docker image build + push |
 
 ---
 
-## Importar no Postman
+## Import into Postman
 
-1. Abra o **Postman**
-2. Clique em **Import**
-3. Selecione `template/backend/docs/DeveloperStore.postman_collection.json`
-4. Execute na ordem: **Auth → Users → Products → Carts → Sales**
+1. Open **Postman**
+2. Click **Import**
+3. Select `template/backend/docs/DeveloperStore.postman_collection.json`
+4. Run in order: **Auth → Users → Products → Carts → Sales**
 
-| Pasta | Requests | Scripts |
+| Folder | Requests | Scripts |
 |---|---|---|
-| Auth | Create User, Authenticate | Login por `username`; salva `userId` e `token` automaticamente |
-| Users | Get User, Delete User | Valida status 200 |
-| Products | Create, Get All, Get by ID, Categories, By Category, Update, Delete | Salva `productId`; valida status e paginação |
-| Carts | Create, Get All, Get by ID, Update, Delete | Data dinâmica via Pre-request; salva `cartId` |
-| Sales | Create, Get All, Get by ID, Update, Cancel Item, Delete | `saleNumber` único por execução via `SALE-{timestamp}`; salva `saleId` e `saleItemId`; valida desconto de 10% no Create |
+| Auth | Create User, Authenticate | Login by `username`; saves `userId` and `token` automatically |
+| Users | Get User, Delete User | Validates status 200 |
+| Products | Create, Get All, Get by ID, Categories, By Category, Update, Delete | Saves `productId`; validates status and pagination |
+| Carts | Create, Get All, Get by ID, Update, Delete | Dynamic date via Pre-request; saves `cartId` |
+| Sales | Create, Get All, Get by ID, Update, Cancel Item, Delete | Unique `saleNumber` per run via `SALE-{timestamp}`; saves `saleId` and `saleItemId`; validates the 10% discount on Create |
 
-> Todos os 22 requests têm scripts de teste com asserções de status. Os Pre-request Scripts em Create/Update de Cart e Sale geram data e saleNumber dinamicamente — a collection pode ser executada múltiplas vezes sem conflito.
+> All 22 requests have test scripts with status assertions. The Pre-request Scripts in Cart and Sale Create/Update generate the date and saleNumber dynamically — the collection can be run multiple times without conflict.
 
 ---
 
-## Decisões Técnicas
+## Technical Decisions
 
-| Decisão | Justificativa |
+| Decision | Rationale |
 |---|---|
-| **AutoMapper 15.1.3** | Versão sem vulnerabilidades de segurança conhecidas |
-| **MockQueryable.NSubstitute** | Necessário para testar handlers com `CountAsync`/`ToListAsync` do EF em testes unitários |
-| **Testcontainers** | Testes de integração com banco real — maior confiabilidade sem mocks de repositório |
-| **Polly retry nos eventos** | Garante resiliência na publicação de eventos de domínio (3 tentativas, exponential backoff) |
-| **External Identity no Cart** | Cart e Product são domínios independentes — desacoplamento intencional (DDD) |
-| **SuppressModelStateInvalidFilter** | Garante que todas as validações passem pelo middleware customizado |
-| **Production no Docker** | Ambiente correto para containers — `Development` causa instabilidade com DataProtection no Linux |
-| **Kestrel explícito na porta 8080** | Garante binding correto independente de variáveis de ambiente |
-| **`[Authorize]` nos controllers** | Products, Carts e Sales exigem JWT Bearer em todos os endpoints; Users expõe somente `POST /api/users` como público (registro) |
-| **`ICollectionFixture` nos testes de integração** | Um único container PostgreSQL compartilhado entre todas as suites — elimina o anti-pattern `BuildServiceProvider()` e reduz o tempo de setup de minutos para ~15s |
-| **JWT Issuer + Audience validados** | `ValidateIssuer` e `ValidateAudience` habilitados; token gerado inclui `iss` e `aud` — tokens de outros sistemas ou chaves diferentes são rejeitados |
-| **JWT expiry lido do config** | `JwtTokenGenerator` lê `Jwt:ExpiryMinutes` (padrão 60 min) — sem valor hardcoded; alterável por variável de ambiente sem rebuild |
-| **JWT secret com mínimo 32 bytes** | `AddJwtAuthentication` valida comprimento mínimo da chave (requisito HS256 / RFC 7518) na inicialização da aplicação |
-| **Ownership check em `PUT /api/users/{id}`** | OWASP A01:2021 — qualquer usuário autenticado poderia atualizar o perfil de outro. O controller extrai o GUID do `ClaimTypes.NameIdentifier` e retorna 403 se não for o dono nem Admin |
-| **`role` e `status` no body de `PUT /api/users/{id}` com guard no handler** | Spec exige esses campos no request body. O handler verifica: se o caller não for Admin e o valor enviado diferir do atual, lança `ForbiddenException` (403). Não-admins podem omitir ou repetir o valor atual sem restrição. Admins podem alterar livremente. Spec compliance ✅ + segurança ✅ |
-| **`PATCH /api/users/{id}/role` — admin only** | Endpoint dedicado com `[Authorize(Roles = "Admin")]` para administradores gerenciarem role e status de qualquer usuário sem precisar do endpoint de perfil |
-| **Rebus como message bus** | Framework obrigatório conforme `frameworks.md`. `RebusEventPublisher` implementa `IEventPublisher` e delega para `IBus.Publish`. O decorator `MongoEventPublisher` persiste no MongoDB e repassa ao Rebus, mantendo a clean architecture intacta. Transport: RabbitMQ em produção (configurado via `RabbitMq:ConnectionString`); InMemory automático em dev/testes (sem dependência de container). Quatro `IHandleMessages<T>` handlers fazem log estruturado dos eventos — extensíveis para qualquer processamento futuro. |
-| **GitFlow + Conventional Commits** | Critério explícito do desafio (spec overview, item #16). Feature branches criadas a partir de `develop`, merge com `--no-ff` para preservar histórico, prefixos semânticos (`feat:`, `fix:`, `test:`, `refactor:`, `chore:`, `docs:`). Histórico auditável e legível por ferramentas de changelog automatizado. |
-| **MongoDB como event store ativo** | Todos os eventos de domínio (`SaleCreatedEvent`, `SaleModifiedEvent`, `SaleCancelledEvent`, `ItemCancelledEvent`) são persistidos no MongoDB via `MongoEventPublisher` (padrão Decorator sobre `LoggingEventPublisher`). A escrita é best-effort: falha no MongoDB não bloqueia o fluxo — o evento ainda é logado via Serilog + Polly. Se `MongoDB:ConnectionString` estiver vazia (desenvolvimento local sem Docker), o decorator é suprimido e apenas o `LoggingEventPublisher` é registrado. |
-| **`AsNoTracking()` nas queries de listagem** | Aplicado em todos os `GetAllQueryable()` dos repositórios (`SaleRepository`, `CartRepository`, `ProductRepository`, `UserRepository`). Queries de leitura não precisam de change-tracking do EF Core — isso reduz alocação de memória e melhora performance. **Não aplicado** em `GetByIdAsync()` pois `DeleteAsync` chama esse método internamente e precisa de entidades rastreadas para cascade delete seguro. |
+| **AutoMapper 15.1.3** | Version with no known security vulnerabilities |
+| **MockQueryable.NSubstitute** | Needed to test handlers that use EF's `CountAsync`/`ToListAsync` in unit tests |
+| **Testcontainers** | Integration tests with a real database — higher reliability without repository mocks |
+| **Polly retry on events** | Ensures resilience when publishing domain events (3 attempts, exponential backoff) |
+| **External Identity on Cart** | Cart and Product are independent domains — intentional decoupling (DDD) |
+| **SuppressModelStateInvalidFilter** | Ensures all validations go through the custom middleware |
+| **Production in Docker** | Correct environment for containers — `Development` causes instability with DataProtection on Linux |
+| **Explicit Kestrel on port 8080** | Ensures correct binding regardless of environment variables |
+| **`[Authorize]` on controllers** | Products, Carts and Sales require JWT Bearer on every endpoint; Users exposes only `POST /api/users` as public (registration) |
+| **`ICollectionFixture` in integration tests** | A single PostgreSQL container shared across all suites — eliminates the `BuildServiceProvider()` anti-pattern and reduces setup time from minutes to ~15s |
+| **JWT Issuer + Audience validated** | `ValidateIssuer` and `ValidateAudience` enabled; the generated token includes `iss` and `aud` — tokens from other systems or with different keys are rejected |
+| **JWT expiry read from config** | `JwtTokenGenerator` reads `Jwt:ExpiryMinutes` (default 60 min) — no hardcoded value; changeable via environment variable without a rebuild |
+| **JWT secret minimum 32 bytes** | `AddJwtAuthentication` validates the minimum key length (HS256 / RFC 7518 requirement) on application startup |
+| **Ownership check on `PUT /api/users/{id}`** | OWASP A01:2021 — any authenticated user could otherwise update another user's profile. The controller extracts the GUID from `ClaimTypes.NameIdentifier` and returns 403 if the caller is neither the owner nor an Admin |
+| **`role` and `status` in the `PUT /api/users/{id}` body with a guard in the handler** | The spec requires these fields in the request body. The handler checks: if the caller is not an Admin and the submitted value differs from the current one, it throws `ForbiddenException` (403). Non-admins may omit or repeat the current value without restriction. Admins may change them freely. Spec compliance ✅ + security ✅ |
+| **`PATCH /api/users/{id}/role` — admin only** | Dedicated endpoint with `[Authorize(Roles = "Admin")]` for administrators to manage any user's role and status without needing the profile endpoint |
+| **Rebus as the message bus** | Framework required by `frameworks.md`. `RebusEventPublisher` implements `IEventPublisher` and delegates to `IBus.Publish`. The `MongoEventPublisher` decorator persists to MongoDB and forwards to Rebus, keeping clean architecture intact. Transport: RabbitMQ in production (configured via `RabbitMq:ConnectionString`); InMemory automatically in dev/tests (no container dependency). Four `IHandleMessages<T>` handlers structured-log the events — extensible to any future processing. |
+| **GitFlow + Conventional Commits** | Explicit challenge criterion (spec overview, item #16). Feature branches created from `develop`, merged with `--no-ff` to preserve history, semantic prefixes (`feat:`, `fix:`, `test:`, `refactor:`, `chore:`, `docs:`). Auditable history readable by automated changelog tools. |
+| **MongoDB as an active event store** | All domain events (`SaleCreatedEvent`, `SaleModifiedEvent`, `SaleCancelledEvent`, `ItemCancelledEvent`) are persisted to MongoDB via `MongoEventPublisher` (Decorator pattern over `LoggingEventPublisher`). The write is best-effort: a MongoDB failure does not block the flow — the event is still logged via Serilog + Polly. If `MongoDB:ConnectionString` is empty (local development without Docker), the decorator is suppressed and only `LoggingEventPublisher` is registered. |
+| **`AsNoTracking()` on listing queries** | Applied to every repository's `GetAllQueryable()` (`SaleRepository`, `CartRepository`, `ProductRepository`, `UserRepository`). Read queries don't need EF Core change tracking — this reduces memory allocation and improves performance. **Not applied** to `GetByIdAsync()` because `DeleteAsync` calls it internally and needs tracked entities for a safe cascade delete. |
+
+For a full, illustrated walkthrough of every architectural choice — with diagrams, code samples and an FAQ — see [`docs/DeveloperStore_Technical_Decisions.html`](template/backend/docs/DeveloperStore_Technical_Decisions.html) (also available as a PDF in the same folder).
 
 ---
 
 <div align="center">
 
-*Desenvolvido por **Raphael Ribeiro** — Desafio Técnico Developer Evaluation 2026*
+*Developed by **Raphael Ribeiro** — Developer Evaluation Technical Challenge 2026*
 
 ![.NET](https://img.shields.io/badge/.NET-8.0-512BD4?style=flat&logo=dotnet&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-13-4169E1?style=flat&logo=postgresql&logoColor=white)
